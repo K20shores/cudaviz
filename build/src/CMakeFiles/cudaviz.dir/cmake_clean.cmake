@@ -1,5 +1,4 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/cudaviz.dir/cmake_device_link.o"
   "CMakeFiles/cudaviz.dir/cudaviz.cu.o"
   "CMakeFiles/cudaviz.dir/cudaviz.cu.o.d"
   "libcudaviz.a"

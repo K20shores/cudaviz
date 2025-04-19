@@ -19,8 +19,6 @@ target_link_libraries(cudaviz
 
 set_property(TARGET cudaviz PROPERTY CUDA_STANDARD 20)
 set_property(TARGET cudaviz PROPERTY CUDA_STANDARD_REQUIRED ON)
-set_property(TARGET cudaviz PROPERTY CUDA_SEPARABLE_COMPILATION ON)
-set_property(TARGET cudaviz PROPERTY CUDA_RESOLVE_DEVICE_SYMBOLS ON)
 
 ################################################################################
 # the executable
@@ -42,5 +40,3 @@ target_link_libraries(main
 
 set_property(TARGET main PROPERTY CUDA_STANDARD 20)
 set_property(TARGET main PROPERTY CUDA_STANDARD_REQUIRED ON)
-set_property(TARGET main PROPERTY CUDA_SEPARABLE_COMPILATION ON)
-set_property(TARGET main PROPERTY CUDA_RESOLVE_DEVICE_SYMBOLS ON)
