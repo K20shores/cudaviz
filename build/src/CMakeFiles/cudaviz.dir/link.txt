@@ -1,2 +1,0 @@
-/usr/bin/ar qc libcudaviz.a CMakeFiles/cudaviz.dir/cudaviz.cu.o
-/usr/bin/ranlib libcudaviz.a
