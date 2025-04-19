@@ -199,4 +199,4 @@ src/CMakeFiles/cudaviz.dir/cudaviz.cu.o : /home/kyle/Documents/cuda/src/cudaviz.
     /usr/include/c++/13/utility \
     /usr/include/c++/13/bits/stl_relops.h \
     /usr/include/c++/13/initializer_list \
-    /home/kyle/Documents/cuda/include/cudaviz/cudzviz.cuh
+    /home/kyle/Documents/cuda/include/cudaviz/cudaviz.hpp

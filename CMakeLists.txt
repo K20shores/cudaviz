@@ -22,8 +22,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${PROJECT_SOURCE_DIR}/cmake")
 option(CUDA_VIZ_ENABLE_TESTS "Enable tests" ON)
 
 # Optional: Set CUDA architecture
-# Can be something like 86, or "native"
-set(CMAKE_CUDA_ARCHITECTURES 86)
+set(CMAKE_CUDA_ARCHITECTURES 75)
 
 ################################################################################
 # Dependencies

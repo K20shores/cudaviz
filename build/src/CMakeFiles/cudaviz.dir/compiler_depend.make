@@ -202,8 +202,10 @@ src/CMakeFiles/cudaviz.dir/cudaviz.cu.o: /home/kyle/Documents/cuda/src/cudaviz.c
   /usr/include/c++/13/utility \
   /usr/include/c++/13/bits/stl_relops.h \
   /usr/include/c++/13/initializer_list \
-  /home/kyle/Documents/cuda/include/cudaviz/cudzviz.cuh
+  /home/kyle/Documents/cuda/include/cudaviz/cudaviz.hpp
 
+
+/home/kyle/Documents/cuda/include/cudaviz/cudaviz.hpp:
 
 /usr/include/c++/13/initializer_list:
 
@@ -604,7 +606,5 @@ src/CMakeFiles/cudaviz.dir/cudaviz.cu.o: /home/kyle/Documents/cuda/src/cudaviz.c
 /usr/include/c++/13/bits/std_abs.h:
 
 /usr/include/x86_64-linux-gnu/bits/mathcalls-narrow.h:
-
-/home/kyle/Documents/cuda/include/cudaviz/cudzviz.cuh:
 
 /usr/include/x86_64-linux-gnu/bits/iscanonical.h:

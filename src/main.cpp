@@ -1,6 +1,5 @@
-
 #include <iostream>
-#include <cudaviz/cudzviz.cuh>
+#include <cudaviz/cudaviz.hpp>
 
 #include <cuda_runtime.h>
 
@@ -17,7 +16,7 @@ int main() {
     cudaMemcpy(deviceData, hostData, N * sizeof(int), cudaMemcpyHostToDevice);
 
     // Launch kernel with 1 block of N threads
-    cudaviz::addOneDriver(deviceData);
+    cudaviz::addOne(deviceData);
 
     // Copy result back to host
     cudaMemcpy(hostData, deviceData, N * sizeof(int), cudaMemcpyDeviceToHost);

@@ -196,7 +196,7 @@ src/CMakeFiles/main.dir/main.cpp.o: /home/kyle/Documents/cuda/src/main.cpp \
   /usr/include/c++/13/bits/ostream.tcc \
   /usr/include/c++/13/istream \
   /usr/include/c++/13/bits/istream.tcc \
-  /home/kyle/Documents/cuda/include/cudaviz/cudzviz.cuh \
+  /home/kyle/Documents/cuda/include/cudaviz/cudaviz.hpp \
   /usr/local/cuda-12.8/targets/x86_64-linux/include/cuda_runtime.h \
   /usr/local/cuda-12.8/targets/x86_64-linux/include/crt/host_config.h \
   /usr/local/cuda-12.8/targets/x86_64-linux/include/builtin_types.h \
@@ -256,7 +256,7 @@ src/CMakeFiles/main.dir/main.cpp.o: /home/kyle/Documents/cuda/src/main.cpp \
 
 /usr/local/cuda-12.8/targets/x86_64-linux/include/cuda_runtime.h:
 
-/home/kyle/Documents/cuda/include/cudaviz/cudzviz.cuh:
+/home/kyle/Documents/cuda/include/cudaviz/cudaviz.hpp:
 
 /usr/include/c++/13/istream:
 
