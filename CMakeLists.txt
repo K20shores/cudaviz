@@ -1,0 +1,44 @@
+################################################################################
+# Preamble
+cmake_minimum_required(VERSION 3.21)
+
+# project and version must be on the same line so that the docs can extract it
+project(cudaviz VERSION 0.0.0 LANGUAGES CXX CUDA)
+
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE "Release" CACHE STRING
+      "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel."
+      FORCE)
+endif(NOT CMAKE_BUILD_TYPE)
+
+message(STATUS "CMake build configuration for ${PROJECT}(${CMAKE_BUILD_TYPE}) ${PROJECT_VERSION}")
+
+################################################################################
+# Projet wide setup options
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${PROJECT_SOURCE_DIR}/cmake")
+
+option(CUDA_VIZ_ENABLE_TESTS "Enable tests" ON)
+
+# Optional: Set CUDA architecture
+# Can be something like 86, or "native"
+set(CMAKE_CUDA_ARCHITECTURES 86)
+
+################################################################################
+# Dependencies
+
+include(cmake/dependencies.cmake)
+
+################################################################################
+# cuda visualization library
+
+add_subdirectory(src)
+
+################################################################################
+# Tests
+
+if(PROJECT_IS_TOP_LEVEL AND CUDA_VIZ_ENABLE_TESTS)
+  enable_testing()
+  add_subdirectory(test)
+endif()
