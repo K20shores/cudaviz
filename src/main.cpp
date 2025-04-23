@@ -9,7 +9,7 @@ int main() {
 
     // Initialize host data
     for (int i = 0; i < N; ++i)
-        hostData[i] = i;
+        hostData[i] = 0;
 
     int *deviceData;
     cudaMalloc(&deviceData, N * sizeof(int));
