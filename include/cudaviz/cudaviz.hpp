@@ -1,5 +1,6 @@
 #pragma once
 
 namespace cudaviz {
-    void addOne(int *data);
+    void setIndex(int *data);
+    void add(float* A, float* B, float* C, int N);
 }
