@@ -3,7 +3,8 @@
 
 #include <cuda_runtime.h>
 
-void setDataWithIndex() {
+void setDataWithIndex()
+{
     const int N = 16;
     int hostData[N];
 
@@ -29,22 +30,24 @@ void setDataWithIndex() {
     std::cout << std::endl;
 }
 
-void addArrays() {
+void addArrays()
+{
     const int N = 2 << 15;
     const std::size_t sz = N * sizeof(float);
     float A[N];
     float B[N];
     float C[N];
 
-    for(int i = 0; i < N; ++i) {
+    for (int i = 0; i < N; ++i)
+    {
         A[i] = 1.0;
         B[i] = 2.0;
         C[i] = 3.0;
     }
 
-    float* deviceA;
-    float* deviceB;
-    float* deviceC;
+    float *deviceA;
+    float *deviceB;
+    float *deviceC;
     cudaMalloc(&deviceA, sz);
     cudaMalloc(&deviceB, sz);
     cudaMalloc(&deviceC, sz);
@@ -64,13 +67,15 @@ void addArrays() {
     cudaFree(deviceC);
 
     float error = 0;
-    for(int i = 0; i < N; ++i) {
+    for (int i = 0; i < N; ++i)
+    {
         error += 3 - C[i];
     }
     std::cout << "Error: " << error << std::endl;
 }
 
-int main() {
+int main()
+{
     setDataWithIndex();
     addArrays();
 }
