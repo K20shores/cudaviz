@@ -74,8 +74,56 @@ void addArrays()
     std::cout << "Error: " << error << std::endl;
 }
 
+void matAdd() {
+    const int N = 2 << 8;
+    float A[N][N];
+    float B[N][N];
+    float C[N][N];
+
+    for (int i = 0; i < N; ++i) {
+        for (int j = 0; j < N; ++j) {
+            A[i][j] = 1.0f;
+            B[i][j] = 2.0f;
+            C[i][j] = 0.0f;
+        }
+    }
+
+    std::size_t sz = N * N * sizeof(float);
+    float* deviceA;
+    float* deviceB;
+    float* deviceC;
+
+    cudaMalloc(&deviceA, sz);
+    cudaMalloc(&deviceB, sz);
+    cudaMalloc(&deviceC, sz);
+
+    cudaMemcpy(deviceA, &A[0][0], sz, cudaMemcpyHostToDevice);
+    cudaMemcpy(deviceB, &B[0][0], sz, cudaMemcpyHostToDevice);
+    cudaMemcpy(deviceC, &C[0][0], sz, cudaMemcpyHostToDevice);
+
+    cudaviz::matAdd(deviceA, deviceB, deviceC, N);
+
+    cudaMemcpy(&A[0][0], deviceA, sz, cudaMemcpyDeviceToHost);
+    cudaMemcpy(&B[0][0], deviceB, sz, cudaMemcpyDeviceToHost);
+    cudaMemcpy(&C[0][0], deviceC, sz, cudaMemcpyDeviceToHost);
+
+    cudaFree(deviceA);
+    cudaFree(deviceB);
+    cudaFree(deviceC);
+
+    float error = 0;
+    for (int i = 0; i < N; ++i)
+    {
+        for(int j = 0; j < N; ++j) {
+            error += 3 - C[i][j];
+        }
+    }
+    std::cout << "Error: " << error << std::endl;
+}
+
 int main()
 {
     setDataWithIndex();
     addArrays();
+    matAdd();
 }
