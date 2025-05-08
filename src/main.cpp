@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cudaviz/cudaviz.hpp>
+#include <vector>
 
 #include <cuda_runtime.h>
 
@@ -121,9 +122,48 @@ void matAdd() {
     std::cout << "Error: " << error << std::endl;
 }
 
+
+void saxpy()
+{
+    const int N = 2 << 25;
+    const std::size_t sz = N * sizeof(float);
+    std::vector<float> X(N);
+    std::vector<float> Y(N);
+
+    for (int i = 0; i < N; ++i)
+    {
+        X[i] = 1.0;
+        Y[i] = 2.0;
+    }
+
+    float *deviceX;
+    float *deviceY;
+    cudaMalloc(&deviceX, sz);
+    cudaMalloc(&deviceY, sz);
+
+    cudaMemcpy(deviceX, X.data(), sz, cudaMemcpyHostToDevice);
+    cudaMemcpy(deviceY, Y.data(), sz, cudaMemcpyHostToDevice);
+
+    cudaviz::saxpy(2.0f, deviceX, deviceY, N);
+
+    cudaMemcpy(X.data(), deviceX, sz, cudaMemcpyDeviceToHost);
+    cudaMemcpy(Y.data(), deviceY, sz, cudaMemcpyDeviceToHost);
+
+    cudaFree(deviceX);
+    cudaFree(deviceY);
+
+    float error = 0;
+    for (int i = 0; i < N; ++i)
+    {
+        error += Y[i] - (2.0f * 1.0f + 2.0f);
+    }
+    std::cout << "Error: " << error << std::endl;
+}
+
 int main()
 {
     setDataWithIndex();
     addArrays();
     matAdd();
+    saxpy();
 }

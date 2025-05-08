@@ -26,6 +26,13 @@ namespace cudaviz
                 C[index] = A[index] + B[index];
             }
         }
+
+        __global__ void saxpy(float a, float* x, float* y, int N) {
+            int thread = blockDim.x * blockIdx.x + threadIdx.x;
+            int stride = blockDim.x * gridDim.x;
+            for(int i = thread; i < N; i += stride)
+                y[i] = a * x[i] + y[i];
+        }
     }
 
     void setIndex(int *data)
@@ -44,6 +51,14 @@ namespace cudaviz
         dim3 threadsPerBlock(16, 16);
         dim3 numBlocks((N + threadsPerBlock.x - 1) / threadsPerBlock.x, (N + threadsPerBlock.y - 1) / threadsPerBlock.y);
         device::matAdd<<<numBlocks, threadsPerBlock>>>(A, B, C, N);
+        cudaDeviceSynchronize();
+    }
+
+
+    void saxpy(float a, float* x, float* y, int N) {
+        int threadsPerBlock = 256;
+        int numBlocks = (N + threadsPerBlock - 1) / threadsPerBlock;
+        device::saxpy<<<numBlocks, threadsPerBlock>>>(a, x, y, N);
         cudaDeviceSynchronize();
     }
 }
