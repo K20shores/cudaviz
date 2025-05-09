@@ -13,6 +13,7 @@ authors = [
 license = { file = "LICENSE" }
 
 dependencies = [
+  "tkinter"
 ]
 
 [project.optional-dependencies]
