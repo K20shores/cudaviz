@@ -4,61 +4,42 @@ namespace cudaviz
 {
     namespace device
     {
-        __global__ void setIndex(int *data)
-        {
-            int idx = threadIdx.x + blockIdx.x * blockDim.x;
-            data[idx] = idx;
+
+        __device__ float scale(int k, int N, float min, float max) {
+            return min + k * ((max - min) / N);
         }
 
-        __global__ void add(float *A, float *B, float *C)
-        {
-            int i = threadIdx.x;
-            C[i] = A[i] + B[i];
-            ;
-        }
-
-        __global__ void matAdd(float* A, float* B, float* C, int N) {
+        __global__ void mandelbrotIteration(int* grid, int N, int max_iter) {
             int i = blockIdx.x * blockDim.x + threadIdx.x;
             int j = blockIdx.y * blockDim.y + threadIdx.y;
+            double x = 0;
+            double y = 0;
+            double xnew = 0;
+            double ynew = 0;
+
+            double x0 = scale(i, N, -2.0f, 0.47f);
+            double y0 = scale(j, N, -1.12f, 1.12f);
 
             if (i < N && j < N) {
-                int index = i*N + j;
-                C[index] = A[index] + B[index];
+                int index = j*N + i;
+                grid[index] = max_iter;
+                for(int iter = 0; iter < max_iter; ++iter) {
+                    xnew = x * x - y * y + x0;
+                    ynew = 2 * x * y + y0;
+                    if (xnew * xnew + ynew * ynew > 4) {
+                        grid[index] = iter;
+                    }
+                    x = xnew;
+                    y = ynew;
+                }
             }
         }
-
-        __global__ void saxpy(float a, float* x, float* y, int N) {
-            int thread = blockDim.x * blockIdx.x + threadIdx.x;
-            int stride = blockDim.x * gridDim.x;
-            for(int i = thread; i < N; i += stride)
-                y[i] = a * x[i] + y[i];
-        }
     }
 
-    void setIndex(int *data)
-    {
-        device::setIndex<<<4, 4>>>(data);
-        cudaDeviceSynchronize();
-    }
-
-    void add(float *A, float *B, float *C, int N)
-    {
-        device::add<<<1, N>>>(A, B, C);
-        cudaDeviceSynchronize();
-    }
-
-    void matAdd(float* A, float* B, float* C, int N) {
+    void mandelbrotIteration(int* grid, int N, int max_iter) {
         dim3 threadsPerBlock(16, 16);
         dim3 numBlocks((N + threadsPerBlock.x - 1) / threadsPerBlock.x, (N + threadsPerBlock.y - 1) / threadsPerBlock.y);
-        device::matAdd<<<numBlocks, threadsPerBlock>>>(A, B, C, N);
-        cudaDeviceSynchronize();
-    }
-
-
-    void saxpy(float a, float* x, float* y, int N) {
-        int threadsPerBlock = 256;
-        int numBlocks = (N + threadsPerBlock - 1) / threadsPerBlock;
-        device::saxpy<<<numBlocks, threadsPerBlock>>>(a, x, y, N);
+        device::mandelbrotIteration<<<numBlocks, threadsPerBlock>>>(grid, N, max_iter);
         cudaDeviceSynchronize();
     }
 }
