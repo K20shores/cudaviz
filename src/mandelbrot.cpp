@@ -11,7 +11,7 @@ namespace cudaviz
     std::vector<std::vector<int>> mandelbrot(int max_iter = 1000, int N = 10)
     {
         std::size_t sz = N * N * sizeof(int);
-        std::vector<int> grid = std::vector<int>(N * N, 0.0f);
+        std::vector<int> grid = std::vector<int>(N * N, 0);
 
         int *deviceGrid;
 
