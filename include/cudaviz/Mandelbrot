@@ -4,5 +4,5 @@
 
 namespace cudaviz
 {
-    std::vector<int> mandelbrot(int max_iter = 1000, int N = 10);
+    std::vector<std::vector<int>> mandelbrot(int max_iter = 1000, int N = 10);
 }

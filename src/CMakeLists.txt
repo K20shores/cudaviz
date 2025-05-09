@@ -20,7 +20,8 @@ target_link_libraries(cudaviz
 set_target_properties(cudaviz PROPERTIES 
     CUDA_STANDARD 20
     CUDA_STANDARD_REQUIRED ON
-    CUDA_ARCHITECTURES "all_major"
+    CUDA_ARCHITECTURES "75"
+    POSITION_INDEPENDENT_CODE ON
 )
 
 target_sources(cudaviz

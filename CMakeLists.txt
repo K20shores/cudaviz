@@ -32,4 +32,4 @@ add_subdirectory(src)
 ################################################################################
 # cuda visualization python library
 
-# add_subdirectory(cudaviz)
+add_subdirectory(cudaviz)
