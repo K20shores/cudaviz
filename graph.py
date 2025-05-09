@@ -7,8 +7,11 @@ from cudaviz.mandelbrot import mandelbrot
 
 matplotlib.use('TkAgg')
 
-colors = ['#000000', '#76b900']
+colors = ['#000000', '#76b900'][::-1]  # Black to Nvidia green
 cmap = LinearSegmentedColormap.from_list("black_to_nvidia_green", colors)
+
+N=5000
+max_iter=50
 
 class GraphPage(tk.Frame):
 
@@ -21,13 +24,13 @@ class GraphPage(tk.Frame):
         self.n_label = tk.Label(self, text="N:")
         self.n_label.pack()
         self.n_entry = tk.Entry(self)
-        self.n_entry.insert(0, "1000")  # Default value
+        self.n_entry.insert(0, f"{N}")  # Default value
         self.n_entry.pack()
 
         self.max_iter_label = tk.Label(self, text="Max Iter:")
         self.max_iter_label.pack()
         self.max_iter_entry = tk.Entry(self)
-        self.max_iter_entry.insert(0, "5000")  # Default value
+        self.max_iter_entry.insert(0, f"{max_iter}")  # Default value
         self.max_iter_entry.pack()
 
         # Button to replot
@@ -71,7 +74,7 @@ class MPLGraph(Figure):
     def __init__(self):
         Figure.__init__(self, figsize=(5, 5), dpi=100)
         self.plot = self.add_subplot(111)
-        grid = mandelbrot(N=1000, max_iter=5000)
+        grid = mandelbrot(N=N, max_iter=max_iter)
         self.plot.imshow(grid, cmap=cmap)
         self.plot.spines[:].set_visible(False)
         self.plot.tick_params(width=0)
