@@ -19,11 +19,6 @@ message(STATUS "CMake build configuration for ${PROJECT}(${CMAKE_BUILD_TYPE}) ${
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${PROJECT_SOURCE_DIR}/cmake")
 
-option(CUDA_VIZ_ENABLE_TESTS "Enable tests" ON)
-
-# Optional: Set CUDA architecture
-set(CMAKE_CUDA_ARCHITECTURES 75)
-
 ################################################################################
 # Dependencies
 
@@ -35,9 +30,6 @@ include(cmake/dependencies.cmake)
 add_subdirectory(src)
 
 ################################################################################
-# Tests
+# cuda visualization python library
 
-if(PROJECT_IS_TOP_LEVEL AND CUDA_VIZ_ENABLE_TESTS)
-  enable_testing()
-  add_subdirectory(test)
-endif()
+add_subdirectory(cudaviz)

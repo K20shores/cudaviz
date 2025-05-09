@@ -17,26 +17,15 @@ target_link_libraries(cudaviz
         cudart
 )
 
-set_property(TARGET cudaviz PROPERTY CUDA_STANDARD 20)
-set_property(TARGET cudaviz PROPERTY CUDA_STANDARD_REQUIRED ON)
-
-################################################################################
-# the executable
+set_target_properties(cudaviz PROPERTIES 
+    CUDA_STANDARD 20
+    CUDA_STANDARD_REQUIRED ON
+    CUDA_ARCHITECTURES "75"
+    POSITION_INDEPENDENT_CODE ON
+)
 
 target_sources(cudaviz
     PRIVATE
         cudaviz.cu
+        mandelbrot.cpp
 )
-
-add_executable(main
-    main.cpp
-)
-target_link_libraries(main
-    PRIVATE
-        cudaviz
-        cuda
-        cudart
-)
-
-set_property(TARGET main PROPERTY CUDA_STANDARD 20)
-set_property(TARGET main PROPERTY CUDA_STANDARD_REQUIRED ON)
