@@ -1,4 +1,4 @@
-#include <cudaviz/cudaviz.hpp>
+#include <cudaviz/Mandelbrot>
 
 namespace cudaviz
 {

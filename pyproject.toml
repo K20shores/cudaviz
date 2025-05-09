@@ -1,0 +1,43 @@
+[build-system]
+requires = ["scikit-build-core", "pybind11"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "cudaviz"
+dynamic = ["version"]
+readme = "README.md"
+description = "A playground for visualizing math things run on NVIDIA GPUs"
+authors = [
+    { name = "Kyle Shores", email = "kshores@ucar.edu" },
+]
+license = { file = "LICENSE" }
+
+dependencies = [
+]
+
+[project.optional-dependencies]
+test = [
+  "numpy",
+]
+
+[tool.scikit-build]
+cmake.build-type = "Release"
+cmake.args = [
+  "-DMUSICA_ENABLE_PYTHON_LIBRARY=ON",
+  "-DMUSICA_ENABLE_TUVX=OFF",
+  "-DMUSICA_BUILD_FORTRAN_INTERFACE=OFF",
+  "-DMUSICA_ENABLE_TESTS=OFF",
+  "-DCMAKE_POLICY_VERSION_MINIMUM=3.5",
+]
+
+# dynamically read the version: https://scikit-build-core.readthedocs.io/en/latest/configuration.html#dynamic-metadata
+[tool.scikit-build.metadata.version]
+provider = "scikit_build_core.metadata.regex"
+input = "CMakeLists.txt"
+regex = 'VERSION\s+(?P<value>[0-9.]+)'
+
+[[tool.scikit-build.generate]]
+path = "cudaviz/_version.py"
+template = '''
+version = "${version}"
+'''

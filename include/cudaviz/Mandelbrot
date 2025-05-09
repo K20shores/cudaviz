@@ -1,0 +1,8 @@
+#pragma once
+
+#include <vector>
+
+namespace cudaviz
+{
+    std::vector<int> mandelbrot(int max_iter = 1000, int N = 10);
+}
