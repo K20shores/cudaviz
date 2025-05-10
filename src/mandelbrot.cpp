@@ -8,7 +8,7 @@
 
 namespace cudaviz
 {
-    std::vector<std::vector<int>> mandelbrot(int max_iter = 1000, int N = 10)
+    std::vector<std::vector<int>> mandelbrot(int max_iter, int N, float x_center, float y_center, float zoom)
     {
         std::size_t sz = N * N * sizeof(int);
         std::vector<int> grid = std::vector<int>(N * N, 0);
@@ -22,7 +22,7 @@ namespace cudaviz
         }
         cudaMemcpy(deviceGrid, grid.data(), sz, cudaMemcpyHostToDevice);
 
-        cudaviz::mandelbrotIteration(deviceGrid, N, max_iter);
+        cudaviz::mandelbrotIteration(deviceGrid, N, max_iter, x_center, y_center, zoom);
 
         cudaMemcpy(grid.data(), deviceGrid, sz, cudaMemcpyDeviceToHost);
         cudaFree(deviceGrid);
