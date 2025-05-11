@@ -27,5 +27,6 @@ set_target_properties(cudaviz PROPERTIES
 target_sources(cudaviz
     PRIVATE
         cudaviz.cu
+        diffusion.cpp
         mandelbrot.cpp
 )
