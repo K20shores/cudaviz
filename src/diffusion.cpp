@@ -18,7 +18,7 @@ namespace cudaviz
       for(int x = 0; x < nx; ++x) {
         float X = x - nx / 2;
         float Y = y - ny / 2;
-        h_old[y*ny + x] = central_temperature * exp(-(X * X + Y * Y) / spread);
+        h_old[y*nx + x] = central_temperature * exp(-(X * X + Y * Y) / spread);
       }
     }
   }
@@ -39,18 +39,24 @@ namespace cudaviz
     CUDA_CHECK(cudaMemcpy(d_old, h_old.data(), sz, cudaMemcpyHostToDevice));
 
     std::vector<std::vector<std::vector<float>>> grid3D(nt, std::vector<std::vector<float>>(nx, std::vector<float>(ny, 0)));
+    for(int y = 0; y < ny; ++y) {
+      for(int x = 0; x < nx; ++x) {
+        grid3D[0][y][x] = h_old[y*nx + x];
+      }
+    }
+
     // h = dx == dy 
     float h = 1.0f;
     float dt = 1.0f;
     float alpha = dt * D / (h * h);
-    for (int t = 0; t < nt; ++t)
+    for (int t = 1; t < nt; ++t)
     {
       naiive_diffusion_iteration(d_old, d_new, nx, ny, alpha);
 
-      CUDA_CHECK(cudaMemcpy(d_new, h_old.data(), sz, cudaMemcpyHostToDevice));
+      CUDA_CHECK(cudaMemcpy(h_old.data(), d_new, sz, cudaMemcpyDeviceToHost));
       for(int y = 0; y < ny; ++y) {
         for(int x = 0; x < nx; ++x) {
-          grid3D[t][y][x] = h_old[y*ny + x];
+          grid3D[t][y][x] = h_old[y*nx + x];
         }
       }
       float* temp = d_old;

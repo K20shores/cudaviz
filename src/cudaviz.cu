@@ -45,21 +45,31 @@ namespace cudaviz
 
         __global__ void naiive_diffusion_iteration(float *d_old, float *d_new, int nx, int ny, float alpha)
         {
-            int x = threadIdx.x + blockIdx.x * blockDim.x;
-            int y = threadIdx.y + blockIdx.y * blockDim.y;
-            int offset = x + y * blockDim.x * gridDim.x;
+            int x = blockIdx.x * blockDim.x + threadIdx.x;
+            int y = blockIdx.y * blockDim.y + threadIdx.y;
+            int offset = y * nx + x;
 
-            int left = offset - 1;
-            int right = offset + 1;
-            if (x == 0) ++left;
-            if (y == ny) --right;
+            if (x < nx && y < ny)
+            {
+                int idx_left = offset - 1;
+                int idx_right = offset + 1;
 
-            int top = offset - ny;
-            int bottom = offset + ny;
-            if (y == 0) top += ny;
-            if (y == ny) bottom -= ny;
+                int idx_top = offset - nx;
+                int idx_bottom = offset + nx;
 
-            d_new[offset] = d_old[offset] + alpha * (d_old[top] + d_old[bottom] + d_old[left] + d_old[right] - d_old[offset] * 4);
+
+                float top, bottom, left, right;
+                top = (y > 0) ? d_old[idx_top] : 0.0f;
+                bottom = (y < ny - 1) ? d_old[idx_bottom] : 0.0f;
+                left = (x > 0) ? d_old[idx_left] : 0.0f;
+                right = (x < nx - 1) ? d_old[idx_right] : 0.0f;
+
+                d_new[offset] = d_old[offset] + alpha * (top + bottom + left + right - d_old[offset] * 4);
+                if (d_new[offset] < 0.0f)
+                {
+                    d_new[offset] = 0.0f;
+                }
+            }
         }
     }
 
