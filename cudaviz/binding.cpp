@@ -8,13 +8,21 @@ namespace py = pybind11;
 
 PYBIND11_MODULE(_cudaviz, m)
 {
-      m.def("_mandelbrot", &cudaviz::mandelbrot,
+      m.def("_naive_mandelbrot", &cudaviz::naive_mandelbrot,
             py::arg("max_iter") = cudaviz::DEFAULT_MAX_ITER,
             py::arg("N") = cudaviz::DEFAULT_N,
             py::arg("x_center") = cudaviz::DEFAULT_X_CENTER,
             py::arg("y_center") = cudaviz::DEFAULT_Y_CENTER,
             py::arg("zoom") = cudaviz::DEFAULT_ZOOM,
             "Iterate an NxN grid to form the Mandelbrot set with adjustable center and zoom");
+
+      m.def("_julia", &cudaviz::julia,
+            py::arg("max_iter") = cudaviz::DEFAULT_MAX_ITER,
+            py::arg("N") = cudaviz::DEFAULT_N,
+            py::arg("x_center") = cudaviz::DEFAULT_X_CENTER,
+            py::arg("y_center") = cudaviz::DEFAULT_Y_CENTER,
+            py::arg("zoom") = cudaviz::DEFAULT_ZOOM,
+            "Iterate an NxN grid to form the Mandelbrot set with adjustable center and zoom using complex math");
 
       m.def("_naive_diffusion", &cudaviz::naive_diffusion,
             py::arg("nx") = cudaviz::DEFAULT_NX,

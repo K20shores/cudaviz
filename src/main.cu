@@ -5,59 +5,93 @@
 
 #include "check_error.hpp"
 
-__global__ void add(int a, int b, int* c) {
-  *c = a + b;
+namespace kernels
+{
+  __global__ void add(int *a, int *b, int *c, int N)
+  {
+    int tid = blockIdx.x;
+    if (tid < N)
+    {
+      c[tid] = a[tid] + b[tid];
+    }
+  }
 }
 
-void device_data() {
+void device_data()
+{
   int device_count;
 
   CUDA_CHECK(cudaGetDeviceCount(&device_count));
 
   cudaDeviceProp prop;
 
-  for(int i = 0; i < device_count; ++i) {
+  for (int i = 0; i < device_count; ++i)
+  {
     CUDA_CHECK(cudaGetDeviceProperties(&prop, i));
     std::cout << std::format(
-      "Device {}\n"
-      "  Name: {}\n"
-      "  Total Global Memory: {} bytes\n"
-      "  Shared Memory per Block: {} bytes\n"
-      "  Registers per Block: {}\n"
-      "  Warp Size: {}\n"
-      "  Max Threads per Block: {}\n"
-      "  Max Threads Dim: ({}, {}, {})\n"
-      "  Max Grid Size: ({}, {}, {})\n"
-      "  Clock Rate: {} kHz\n"
-      "  Compute Capability: {}.{}\n",
-      i, 
-      prop.name,
-      prop.totalGlobalMem,
-      prop.sharedMemPerBlock,
-      prop.regsPerBlock,
-      prop.warpSize,
-      prop.maxThreadsPerBlock,
-      prop.maxThreadsDim[0], prop.maxThreadsDim[1], prop.maxThreadsDim[2],
-      prop.maxGridSize[0], prop.maxGridSize[1], prop.maxGridSize[2],
-      prop.clockRate / 1000,
-      prop.major, prop.minor
-    );
-
+        "Device {}\n"
+        "  Name: {}\n"
+        "  Total Global Memory: {} bytes\n"
+        "  Shared Memory per Block: {} bytes\n"
+        "  Registers per Block: {}\n"
+        "  Warp Size: {}\n"
+        "  Max Threads per Block: {}\n"
+        "  Max Threads Dim: ({}, {}, {})\n"
+        "  Max Grid Size: ({}, {}, {})\n"
+        "  Clock Rate: {} kHz\n"
+        "  Compute Capability: {}.{}\n",
+        i,
+        prop.name,
+        prop.totalGlobalMem,
+        prop.sharedMemPerBlock,
+        prop.regsPerBlock,
+        prop.warpSize,
+        prop.maxThreadsPerBlock,
+        prop.maxThreadsDim[0], prop.maxThreadsDim[1], prop.maxThreadsDim[2],
+        prop.maxGridSize[0], prop.maxGridSize[1], prop.maxGridSize[2],
+        prop.clockRate / 1000,
+        prop.major, prop.minor);
   }
 }
 
-int main () {
-  int c;
-  int* dev_c;
+void add()
+{
+  constexpr int N = 10;
+  int a[N], b[N], c[N];
+  int *dev_a, *dev_b, *dev_c;
 
-  CUDA_CHECK(cudaMalloc((void**)&dev_c, sizeof(int)));
+  for (int i = 0; i < N; ++i)
+  {
+    a[i] = -i;
+    b[i] = i * i;
+  }
 
-  add<<<1, 1>>>(2, 3, dev_c);
+  CUDA_CHECK(cudaMalloc((void **)&dev_a, N * sizeof(int)));
+  CUDA_CHECK(cudaMalloc((void **)&dev_b, N * sizeof(int)));
+  CUDA_CHECK(cudaMalloc((void **)&dev_c, N * sizeof(int)));
 
-  CUDA_CHECK(cudaMemcpy(&c, dev_c, sizeof(int), cudaMemcpyDeviceToHost));
+  CUDA_CHECK(cudaMemcpy(dev_a, a, N * sizeof(int), cudaMemcpyHostToDevice));
+  CUDA_CHECK(cudaMemcpy(dev_b, b, N * sizeof(int), cudaMemcpyHostToDevice));
+  CUDA_CHECK(cudaMemcpy(dev_c, c, N * sizeof(int), cudaMemcpyHostToDevice));
 
-  std::cout << "c: " << c << std::endl;
+  kernels::add<<<N, 1>>>(a, b, c, N);
 
+  CUDA_CHECK(cudaMemcpy(a, dev_a, sizeof(int), cudaMemcpyDeviceToHost));
+  CUDA_CHECK(cudaMemcpy(b, dev_b, sizeof(int), cudaMemcpyDeviceToHost));
+  CUDA_CHECK(cudaMemcpy(c, dev_c, sizeof(int), cudaMemcpyDeviceToHost));
+
+  for (int i = 0; i < N; ++i)
+  {
+    std::cout << std::format("{} = {} + {}\n", c[i], a[i], b[i]);
+  }
+
+  CUDA_CHECK(cudaFree(dev_a));
+  CUDA_CHECK(cudaFree(dev_b));
   CUDA_CHECK(cudaFree(dev_c));
+}
+
+int main()
+{
   device_data();
+  add();
 }

@@ -1,6 +1,6 @@
 from _cudaviz import _naive_diffusion
 
-def naiive_diffusion(nx: int = 100, ny: int = 100, nt: int = 100, dt: float = 0.1, alpha: float = 2, central_temperature: float = 100, spread: float = 10) -> list[list[list]]:
+def naive_diffusion(nx: int = 100, ny: int = 100, nt: int = 100, dt: float = 0.1, alpha: float = 2, central_temperature: float = 100, spread: float = 10) -> list[list[list]]:
   """
   A naiive diffusion function to generate a 2D diffusion pattern. 
   
