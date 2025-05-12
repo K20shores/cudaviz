@@ -23,7 +23,7 @@ namespace cudaviz
     }
   }
 
-  std::vector<std::vector<std::vector<float>>> naiive_diffusion(int nx, int ny, int nt, float D, float central_temperature, float spread)
+  std::vector<std::vector<std::vector<float>>> naive_diffusion(int nx, int ny, int nt, float D, float central_temperature, float spread)
   {
     std::size_t sz = nx * ny * sizeof(float);
     std::vector<float> h_old = std::vector<float>(nx * ny, 0.0f);
