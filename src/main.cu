@@ -18,7 +18,31 @@ void device_data() {
 
   for(int i = 0; i < device_count; ++i) {
     CUDA_CHECK(cudaGetDeviceProperties(&prop, i));
-    std::cout << std::format("Device {}\n", i);
+    std::cout << std::format(
+      "Device {}\n"
+      "  Name: {}\n"
+      "  Total Global Memory: {} bytes\n"
+      "  Shared Memory per Block: {} bytes\n"
+      "  Registers per Block: {}\n"
+      "  Warp Size: {}\n"
+      "  Max Threads per Block: {}\n"
+      "  Max Threads Dim: ({}, {}, {})\n"
+      "  Max Grid Size: ({}, {}, {})\n"
+      "  Clock Rate: {} kHz\n"
+      "  Compute Capability: {}.{}\n",
+      i, 
+      prop.name,
+      prop.totalGlobalMem,
+      prop.sharedMemPerBlock,
+      prop.regsPerBlock,
+      prop.warpSize,
+      prop.maxThreadsPerBlock,
+      prop.maxThreadsDim[0], prop.maxThreadsDim[1], prop.maxThreadsDim[2],
+      prop.maxGridSize[0], prop.maxGridSize[1], prop.maxGridSize[2],
+      prop.clockRate / 1000,
+      prop.major, prop.minor
+    );
+
   }
 }
 
