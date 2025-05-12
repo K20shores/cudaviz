@@ -9,16 +9,16 @@ __global__ void add(int a, int b, int* c) {
   *c = a + b;
 }
 
-void deviceData() {
-  int deviceCount;
+void device_data() {
+  int device_count;
 
-  CUDA_CHECK(cudaGetDeviceCount(&deviceCount));
+  CUDA_CHECK(cudaGetDeviceCount(&device_count));
 
   cudaDeviceProp prop;
 
-  for(int i = 0; i < deviceCount; ++i) {
+  for(int i = 0; i < device_count; ++i) {
     CUDA_CHECK(cudaGetDeviceProperties(&prop, i));
-    std::format("Device {}\n", i);
+    std::cout << std::format("Device {}\n", i);
   }
 }
 
@@ -35,4 +35,5 @@ int main () {
   std::cout << "c: " << c << std::endl;
 
   CUDA_CHECK(cudaFree(dev_c));
+  device_data();
 }
