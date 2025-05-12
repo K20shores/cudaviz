@@ -1,6 +1,6 @@
-from _cudaviz import _naiive_diffusion
+from _cudaviz import _naive_diffusion
 
-def naiive_diffusion(nx: int = 100, ny: int = 100, nt: int = 100, d: float = 2, central_temperature: float = 100, spread: float = 10) -> list[list[list]]:
+def naiive_diffusion(nx: int = 100, ny: int = 100, nt: int = 100, dt: float = 0.1, alpha: float = 2, central_temperature: float = 100, spread: float = 10) -> list[list[list]]:
   """
   A naiive diffusion function to generate a 2D diffusion pattern. 
   
@@ -12,7 +12,8 @@ def naiive_diffusion(nx: int = 100, ny: int = 100, nt: int = 100, d: float = 2, 
     nx (int): Number of x points.
     ny (int): Number of y points.
     nt (int): Number of time steps.
-    d (float): Diffusion coefficient.
+    dt (float): Time step size.
+    alpha (float): Diffusion coefficient.
     central_temperature (float): Initial temperature at the center of the grid.
     spread (float): Temperature spread around the center.
 
@@ -20,4 +21,4 @@ def naiive_diffusion(nx: int = 100, ny: int = 100, nt: int = 100, d: float = 2, 
     list[list[list]]: A 3D list representing the diffusion pattern.
   """
 
-  return _naiive_diffusion(nx, ny, nt, d, central_temperature, spread)
+  return _naive_diffusion(nx, ny, nt, dt, alpha, central_temperature, spread)

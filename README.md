@@ -1,8 +1,9 @@
-# cuda
+# cudaviz
 
+This package contains a C library that is wrapped with pybind11 to expose functions in python
+which are run on NVIDIA GPUs with CUDA.
 
-```
-export CC=$CONDA_PREFIX/bin/x86_64-conda-linux-gnu-gcc
-export CXX=$CONDA_PREFIX/bin/x86_64-conda-linux-gnu-g++
-cmake -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_CUDA_HOST_COMPILER=$CXX -DCMAKE_CUDA_FLAGS="-I/usr/local/cuda/include" -DCMAKE_CXX_FLAGS="-I/usr/local/cuda/include"..
-```
+The supported functions are
+
+- Mandelbrot
+- A naive 2D heat diffusion

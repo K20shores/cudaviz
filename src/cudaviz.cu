@@ -43,7 +43,7 @@ namespace cudaviz
             }
         }
 
-        __global__ void naiive_diffusion_iteration(float *d_old, float *d_new, int nx, int ny, float alpha)
+        __global__ void naive_diffusion_iteration(float *d_old, float *d_new, int nx, int ny, float diffusion_number)
         {
             int x = blockIdx.x * blockDim.x + threadIdx.x;
             int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -64,7 +64,7 @@ namespace cudaviz
                 left = (x > 0) ? d_old[idx_left] : 0;
                 right = (x < nx - 1) ? d_old[idx_right] : 0;
 
-                d_new[offset] = d_old[offset] + alpha * (top + bottom + left + right - d_old[offset] * 4.0f);
+                d_new[offset] = d_old[offset] + diffusion_number * (top + bottom + left + right - d_old[offset] * 4.0f);
                 if (d_new[offset] < 0.0f)
                 {
                     d_new[offset] = 0.0f;
@@ -81,11 +81,11 @@ namespace cudaviz
         cudaDeviceSynchronize();
     }
 
-    void naiive_diffusion_iteration(float *d_old, float *d_new, int nx, int ny, float alpha)
+    void naive_diffusion_iteration(float *d_old, float *d_new, int nx, int ny, float diffusion_number)
     {
         dim3 threadsPerBlock(16, 16);
         dim3 numBlocks((nx + threadsPerBlock.x - 1) / threadsPerBlock.x, (ny + threadsPerBlock.y - 1) / threadsPerBlock.y);
-        device::naiive_diffusion_iteration<<<numBlocks, threadsPerBlock>>>(d_old, d_new, nx, ny, alpha);
+        device::naive_diffusion_iteration<<<numBlocks, threadsPerBlock>>>(d_old, d_new, nx, ny, diffusion_number);
         cudaDeviceSynchronize();
     }
 }
