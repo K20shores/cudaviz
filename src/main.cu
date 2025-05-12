@@ -9,10 +9,11 @@ namespace kernels
 {
   __global__ void add(int *a, int *b, int *c, int N)
   {
-    int tid = blockIdx.x;
-    if (tid < N)
+    int tid = threadIdx.x + blockIdx.x * blockDim.x;
+    while (tid < N)
     {
       c[tid] = a[tid] + b[tid];
+      tid += blockDim.x * gridDim.x;
     }
   }
 }
@@ -56,7 +57,7 @@ void device_data()
 
 void add()
 {
-  constexpr int N = 10;
+  constexpr int N = 4096;
   int a[N], b[N], c[N];
   int *dev_a, *dev_b, *dev_c;
 
@@ -74,7 +75,7 @@ void add()
   CUDA_CHECK(cudaMemcpy(dev_b, b, N * sizeof(int), cudaMemcpyHostToDevice));
   CUDA_CHECK(cudaMemcpy(dev_c, c, N * sizeof(int), cudaMemcpyHostToDevice));
 
-  kernels::add<<<N, 1>>>(a, b, c, N);
+  kernels::add<<<128, 128>>>(a, b, c, N);
 
   CUDA_CHECK(cudaMemcpy(a, dev_a, sizeof(int), cudaMemcpyDeviceToHost));
   CUDA_CHECK(cudaMemcpy(b, dev_b, sizeof(int), cudaMemcpyDeviceToHost));
@@ -82,7 +83,9 @@ void add()
 
   for (int i = 0; i < N; ++i)
   {
-    std::cout << std::format("{} = {} + {}\n", c[i], a[i], b[i]);
+    if (a[i] + b[i] != c[i]) {
+      std::cout << std::format("Error: {} != {} + {}\n", c[i], a[i], b[i]);
+    }
   }
 
   CUDA_CHECK(cudaFree(dev_a));

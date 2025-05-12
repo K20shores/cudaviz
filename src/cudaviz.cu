@@ -68,7 +68,7 @@ namespace cudaviz
             double x0 = scale(i, N, x_center - scaled_x_width / 2, x_center + scaled_x_width / 2);
             double y0 = scale(j, N, y_center - scaled_y_height / 2, y_center + scaled_y_height / 2);
 
-            cuComplex c( -0.8, 0.156);
+            cuComplex c(-0.8, 0.156);
             cuComplex z(x0, y0);
 
             if (i < N && j < N)
@@ -114,6 +114,21 @@ namespace cudaviz
                 }
             }
         }
+
+        __global__ void ripple(float *grid, int N, int tick)
+        {
+            int x = threadIdx.x + blockIdx.x * blockDim.x;
+            int y = threadIdx.y + blockIdx.y * blockDim.y;
+            int offset = x + y * blockDim.x * gridDim.x;
+
+            if (x < N && y < N)
+            {
+                float fx = x - N / 2;
+                float fy = y - N / 2;
+                float d = sqrtf(fx * fx + fy * fy);
+                grid[offset] = 128.0f + 127.0f * cos(d / 10.0f - tick / 7.0f) / (d / 10.0f + 1.0f);
+            }
+        }
     }
 
     void naive_mandelbrot(int *grid, int N, int max_iter, float x_center, float y_center, float zoom)
@@ -121,7 +136,6 @@ namespace cudaviz
         dim3 threadsPerBlock(16, 16);
         dim3 numBlocks((N + threadsPerBlock.x - 1) / threadsPerBlock.x, (N + threadsPerBlock.y - 1) / threadsPerBlock.y);
         device::naive_mandelbrot<<<numBlocks, threadsPerBlock>>>(grid, N, max_iter, x_center, y_center, zoom);
-        cudaDeviceSynchronize();
     }
 
     void julia(int *grid, int N, int max_iter, float x_center, float y_center, float zoom)
@@ -136,6 +150,12 @@ namespace cudaviz
         dim3 threadsPerBlock(16, 16);
         dim3 numBlocks((nx + threadsPerBlock.x - 1) / threadsPerBlock.x, (ny + threadsPerBlock.y - 1) / threadsPerBlock.y);
         device::naive_diffusion_iteration<<<numBlocks, threadsPerBlock>>>(d_old, d_new, nx, ny, diffusion_number);
-        cudaDeviceSynchronize();
+    }
+
+    void _ripple(float *grid, int N, int tick)
+    {
+        dim3 threadsPerBlock(16, 16);
+        dim3 numBlocks((N + 15) / 16, (N + 15) / 16);
+        device::ripple<<<numBlocks, threadsPerBlock>>>(grid, N, tick);
     }
 }

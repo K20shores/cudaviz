@@ -1,8 +1,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include <cudaviz/Mandelbrot>
-#include <cudaviz/Diffusion>
+#include <cudaviz/cudaviz>
 
 namespace py = pybind11;
 
@@ -33,4 +32,9 @@ PYBIND11_MODULE(_cudaviz, m)
             py::arg("central_temperature") = cudaviz::DEFAULT_CENTRAL_TEMPERATURE,
             py::arg("spread") = cudaviz::DEFAULT_SPREAD,
             "Perform diffusion on a grid");
+
+      m.def("_ripple", &cudaviz::ripple,
+            py::arg("N") = cudaviz::DEFAULT_DIM,
+            py::arg("tick") = cudaviz::DEFAULT_TICK,
+            "Create a ripple image");
 }
