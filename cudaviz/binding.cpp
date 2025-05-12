@@ -19,7 +19,7 @@ PYBIND11_MODULE(_cudaviz, m)
       m.def("_naiive_diffusion", &cudaviz::naiive_diffusion,
             py::arg("nx") = cudaviz::DEFAULT_NX,
             py::arg("ny") = cudaviz::DEFAULT_NY,
-            py::arg("t") = cudaviz::DEFAULT_NT,
+            py::arg("nt") = cudaviz::DEFAULT_NT,
             py::arg("d") = cudaviz::DEFAULT_D,
             py::arg("central_temperature") = cudaviz::DEFAULT_CENTRAL_TEMPERATURE,
             py::arg("spread") = cudaviz::DEFAULT_SPREAD,
