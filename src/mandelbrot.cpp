@@ -1,4 +1,7 @@
+#include <cudaviz/Mandelbrot>
 #include <cudaviz/kernels.hpp>
+
+#include "check_error.hpp"
 
 #include <vector>
 #include <string>
@@ -15,17 +18,13 @@ namespace cudaviz
 
         int *deviceGrid;
 
-        cudaError_t error =  cudaMalloc(&deviceGrid, sz);
-        if (error != cudaSuccess)
-        {
-            throw std::runtime_error("Error allocating device memory: " + std::string(cudaGetErrorString(error)));
-        }
-        cudaMemcpy(deviceGrid, grid.data(), sz, cudaMemcpyHostToDevice);
+        CUDA_CHECK(cudaMalloc(&deviceGrid, sz));
+        CUDA_CHECK(cudaMemcpy(deviceGrid, grid.data(), sz, cudaMemcpyHostToDevice));
 
-        cudaviz::mandelbrotIteration(deviceGrid, N, max_iter, x_center, y_center, zoom);
+        cudaviz::mandelbrot_iteration(deviceGrid, N, max_iter, x_center, y_center, zoom);
 
-        cudaMemcpy(grid.data(), deviceGrid, sz, cudaMemcpyDeviceToHost);
-        cudaFree(deviceGrid);
+        CUDA_CHECK(cudaMemcpy(grid.data(), deviceGrid, sz, cudaMemcpyDeviceToHost));
+        CUDA_CHECK(cudaFree(deviceGrid));
 
         std::vector<std::vector<int>> grid2D(N, std::vector<int>(N));
         for (int i = 0; i < N; ++i)
