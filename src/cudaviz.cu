@@ -64,7 +64,7 @@ namespace cudaviz
                 left = (x > 0) ? d_old[idx_left] : 0;
                 right = (x < nx - 1) ? d_old[idx_right] : 0;
 
-                d_new[offset] = d_old[offset] + alpha * (top + bottom + left + right - d_old[offset] * 4);
+                d_new[offset] = d_old[offset] + alpha * (top + bottom + left + right - d_old[offset] * 4.0f);
                 if (d_new[offset] < 0.0f)
                 {
                     d_new[offset] = 0.0f;
