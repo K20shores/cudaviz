@@ -56,7 +56,7 @@ namespace cudaviz
         std::swap(d_old, d_new);
       }
 
-      CUDA_CHECK(cudaMemcpy(h_old.data(), d_new, sz, cudaMemcpyDeviceToHost));
+      CUDA_CHECK(cudaMemcpy(h_old.data(), d_old, sz, cudaMemcpyDeviceToHost));
       for(int y = 0; y < ny; ++y) {
         for(int x = 0; x < nx; ++x) {
           grid3D[t][y][x] = h_old[y*nx + x];
