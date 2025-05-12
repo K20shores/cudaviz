@@ -51,7 +51,9 @@ namespace cudaviz
     float alpha = dt * D / (h * h);
     for (int t = 1; t < nt; ++t)
     {
-      for(float substep = 0; substep < 1; substep += dt) {
+      int num_substeps = static_cast<int>(1.0f / dt);
+      for(int substep = 0; substep < num_substeps; ++substep) {
+        float current_time = substep * dt;
         naiive_diffusion_iteration(d_old, d_new, nx, ny, alpha);
         std::swap(d_old, d_new);
       }
