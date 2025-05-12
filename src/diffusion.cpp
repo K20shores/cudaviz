@@ -45,13 +45,16 @@ namespace cudaviz
       }
     }
 
-    // h = dx == dy 
+    // h = dx = dy 
     float h = 1.0f;
-    float dt = 1.0f;
+    float dt = 0.1f;
     float alpha = dt * D / (h * h);
     for (int t = 1; t < nt; ++t)
     {
-      naiive_diffusion_iteration(d_old, d_new, nx, ny, alpha);
+      for(float substep = 0; substep < 1; substep += dt) {
+        naiive_diffusion_iteration(d_old, d_new, nx, ny, alpha);
+        std::swap(d_old, d_new);
+      }
 
       CUDA_CHECK(cudaMemcpy(h_old.data(), d_new, sz, cudaMemcpyDeviceToHost));
       for(int y = 0; y < ny; ++y) {
@@ -59,9 +62,6 @@ namespace cudaviz
           grid3D[t][y][x] = h_old[y*nx + x];
         }
       }
-      float* temp = d_old;
-      d_old = d_new;
-      d_new = temp;
     }
 
     CUDA_CHECK(cudaFree(d_old));

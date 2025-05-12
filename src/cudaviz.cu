@@ -59,10 +59,10 @@ namespace cudaviz
 
 
                 float top, bottom, left, right;
-                top = (y > 0) ? d_old[idx_top] : 0.0f;
-                bottom = (y < ny - 1) ? d_old[idx_bottom] : 0.0f;
-                left = (x > 0) ? d_old[idx_left] : 0.0f;
-                right = (x < nx - 1) ? d_old[idx_right] : 0.0f;
+                top = (y > 0) ? d_old[idx_top] : 0;
+                bottom = (y < ny - 1) ? d_old[idx_bottom] : 0;
+                left = (x > 0) ? d_old[idx_left] : 0;
+                right = (x < nx - 1) ? d_old[idx_right] : 0;
 
                 d_new[offset] = d_old[offset] + alpha * (top + bottom + left + right - d_old[offset] * 4);
                 if (d_new[offset] < 0.0f)
