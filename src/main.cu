@@ -52,6 +52,9 @@ namespace kernels
       c[blockIdx.x] = cache[0];
     }
   }
+
+  __global__ void histogram(unsigned char* buffer, int N, unsigned int * hist) {
+  }
 }
 
 void device_data()
@@ -77,6 +80,7 @@ void device_data()
         "  Max Grid Size: ({}, {}, {})\n"
         "  Clock Rate: {} kHz\n"
         "  Compute Capability: {}.{}\n"
+        "  Number of streaming multiprocessor: {}\n"
         "  Maximum number of threads: {}\n",
         i,
         prop.name,
@@ -89,6 +93,7 @@ void device_data()
         prop.maxGridSize[0], prop.maxGridSize[1], prop.maxGridSize[2],
         prop.clockRate / 1000,
         prop.major, prop.minor,
+        prop.multiProcessorCount,
         prop.maxThreadsPerMultiProcessor * prop.multiProcessorCount
       );
   }
@@ -181,10 +186,65 @@ void dot(){
   delete[] partial_c;
 }
 
+
+void histogram(){
+  constexpr int N = 100 * 1024 * 1024;
+  std::vector<unsigned char> buffer(N);
+  for(int i = 0; i < N; ++i)
+  {
+    buffer[i] = rand() % 256;
+  }
+
+  cudaEvent_t start, stop;
+  CUDA_CHECK(cudaEventCreate(&start));
+  CUDA_CHECK(cudaEventCreate(&stop));
+
+  CUDA_CHECK(cudaEventRecord(start, 0));
+
+  unsigned char* dev_buffer;
+  unsigned int* dev_hist;
+
+  CUDA_CHECK(cudaMalloc((void**)&dev_buffer, N));
+  CUDA_CHECK(cudaMemcpy(dev_buffer, buffer.data(), N, cudaMemcpyHostToDevice));
+
+  CUDA_CHECK(cudaMalloc((void**)&dev_hist, 256 * sizeof(unsigned int)));
+  CUDA_CHECK(cudaMemset(dev_hist, 0, 256 * sizeof(unsigned int)));
+
+  std::vector<unsigned int> hist(256);
+  CUDA_CHECK(cudaMemcpy(hist.data(), dev_hist, 256 * sizeof(unsigned int), cudaMemcpyDeviceToHost));
+
+  cudaDeviceProp prop;
+  CUDA_CHECK(cudaGetDeviceProperties(&prop, 0));
+  int blocks = prop.multiProcessorCount;
+
+  kernels::histogram<<<blocks*2, 256>>>(dev_buffer, N, dev_hist);
+
+  CUDA_CHECK(cudaEventRecord(stop, 0));
+  CUDA_CHECK(cudaEventSynchronize(stop));
+  float elapsed_time;
+  CUDA_CHECK(cudaEventElapsedTime(&elapsed_time, start, stop));
+
+  std::cout << std::format("Histogram time: {}\n", elapsed_time);
+
+  for(int i = 0; i < N; ++i) {
+    hist[buffer[i]]--;
+  }
+  for(int i = 0; i < 256; ++i) {
+    if (hist[i] != 0) {
+      std::cout << std::format("Histogram at {} is not zero!\n", i);
+    }
+  }
+
+  CUDA_CHECK(cudaEventDestroy(start));
+  CUDA_CHECK(cudaEventDestroy(stop));
+  CUDA_CHECK(cudaFree(dev_buffer));
+  CUDA_CHECK(cudaFree(dev_hist));
+}
+
 int main()
 {
   device_data();
   add();
   dot();
-  cudaviz::ray_trace();
+  histogram();
 }
