@@ -9,7 +9,7 @@ def ripple(N: int = 1024, tick: int = 0) -> list[list]:
     tick (int): The time tick
 
   Returns:
-    list[list]: A 2D list representing the diffusion pattern.
+    list[list]: A 2D list representing the ripple pattern.
   """
 
   return _ripple(N, tick)

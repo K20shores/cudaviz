@@ -2,6 +2,7 @@
 #include <pybind11/stl.h>
 
 #include <cudaviz/cudaviz>
+#include <format>
 
 namespace py = pybind11;
 
@@ -37,4 +38,20 @@ PYBIND11_MODULE(_cudaviz, m)
             py::arg("N") = cudaviz::DEFAULT_DIM,
             py::arg("tick") = cudaviz::DEFAULT_TICK,
             "Create a ripple image");
+
+      py::class_<cudaviz::RGB>(m, "RGB")
+          .def(py::init<>())
+          .def_readwrite("r", &cudaviz::RGB::r)
+          .def_readwrite("g", &cudaviz::RGB::g)
+          .def_readwrite("b", &cudaviz::RGB::b)
+          .def("__str__", [](const cudaviz::RGB &p)
+               { return "RGB"; })
+          .def("__repr__", [](const cudaviz::RGB &p)
+               { return std::format("<RGB: (r: {}, g: {}, b: {})>", p.r, p.g, p.b); });
+      ;
+
+      m.def("_ray_trace", &cudaviz::ray_trace,
+            py::arg("N") = cudaviz::DEFAULT_RAY_DIM,
+            py::arg("n_spheres") = cudaviz::DEFAULT_N_SPHERES,
+            "Create a ray-traced image from randomly genreated spheres");
 }

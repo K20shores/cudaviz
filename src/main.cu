@@ -183,8 +183,8 @@ void dot(){
 
 int main()
 {
-  device_data();
-  add();
-  dot();
-  cudaviz::naive_diffusion();
+  // device_data();
+  // add();
+  // dot();
+  cudaviz::ray_trace(10, 2);
 }

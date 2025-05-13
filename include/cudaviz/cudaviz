@@ -3,3 +3,4 @@
 #include <cudaviz/Mandelbrot>
 #include <cudaviz/Diffusion>
 #include <cudaviz/Ripple>
+#include <cudaviz/RayTrace>

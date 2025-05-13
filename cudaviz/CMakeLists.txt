@@ -2,6 +2,8 @@ pybind11_add_module(_cudaviz
   binding.cpp
 )
 
+target_compile_features(_cudaviz PRIVATE cxx_std_20)
+
 target_link_libraries(_cudaviz
   PRIVATE
     k20shores::cudaviz

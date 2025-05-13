@@ -1,0 +1,17 @@
+#pragma once
+
+#include <vector>
+
+namespace cudaviz
+{
+    struct RGB {
+        float r;
+        float g;
+        float b;
+    };
+
+    constexpr int DEFAULT_N_SPHERES = 10;
+    constexpr int DEFAULT_RAY_DIM = 10;
+
+    std::vector<std::vector<RGB>> ray_trace(int N = DEFAULT_RAY_DIM, int n_spheres = DEFAULT_N_SPHERES);
+}
