@@ -9,8 +9,11 @@
 #include <format>
 
 #define INF 2e10f
-#define rnd(x) (x * rand() / RAND_MAX)
 
+inline float rnd(float x)
+{
+    return x * static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+}
 namespace cudaviz
 {
     namespace device
