@@ -21,7 +21,7 @@ namespace cudaviz
         CUDA_CHECK(cudaMalloc(&deviceGrid, sz));
         CUDA_CHECK(cudaMemcpy(deviceGrid, grid.data(), sz, cudaMemcpyHostToDevice));
 
-        _ripple(deviceGrid, N, tick);
+        kernels::ripple(deviceGrid, N, tick);
 
         CUDA_CHECK(cudaMemcpy(grid.data(), deviceGrid, sz, cudaMemcpyDeviceToHost));
         CUDA_CHECK(cudaFree(deviceGrid));

@@ -53,7 +53,7 @@ namespace cudaviz
     {
       int num_substeps = static_cast<int>(1.0f / dt);
       for(int substep = 0; substep < num_substeps; ++substep) {
-        naive_diffusion_iteration(d_old, d_new, nx, ny, d);
+        kernels::naive_diffusion_iteration(d_old, d_new, nx, ny, d);
         std::swap(d_old, d_new);
       }
 

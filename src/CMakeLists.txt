@@ -29,6 +29,7 @@ target_sources(cudaviz
         cudaviz.cu
         diffusion.cpp
         mandelbrot.cpp
+        ray_trace.cpp
         ripple.cpp
 )
 

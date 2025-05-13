@@ -21,7 +21,7 @@ namespace cudaviz
         CUDA_CHECK(cudaMalloc(&deviceGrid, sz));
         CUDA_CHECK(cudaMemcpy(deviceGrid, grid.data(), sz, cudaMemcpyHostToDevice));
 
-        naive_mandelbrot(deviceGrid, N, max_iter, x_center, y_center, zoom);
+        kernels::naive_mandelbrot(deviceGrid, N, max_iter, x_center, y_center, zoom);
 
         CUDA_CHECK(cudaMemcpy(grid.data(), deviceGrid, sz, cudaMemcpyDeviceToHost));
         CUDA_CHECK(cudaFree(deviceGrid));
@@ -48,7 +48,7 @@ namespace cudaviz
         CUDA_CHECK(cudaMalloc(&deviceGrid, sz));
         CUDA_CHECK(cudaMemcpy(deviceGrid, grid.data(), sz, cudaMemcpyHostToDevice));
 
-        cudaviz::julia(deviceGrid, N, max_iter, x_center, y_center, zoom);
+        kernels::julia(deviceGrid, N, max_iter, x_center, y_center, zoom);
 
         CUDA_CHECK(cudaMemcpy(grid.data(), deviceGrid, sz, cudaMemcpyDeviceToHost));
         CUDA_CHECK(cudaFree(deviceGrid));

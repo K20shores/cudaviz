@@ -186,5 +186,5 @@ int main()
   device_data();
   add();
   dot();
-  cudaviz::naive_diffusion();
+  cudaviz::ray_trace();
 }
