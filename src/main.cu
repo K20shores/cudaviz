@@ -28,11 +28,11 @@ namespace kernels
     float temp = 0;
     while (tid < N)
     {
-      temp += a[tid] + b[tid];
-      cacheIdx += blockIdx.x * gridDim.x;
+      temp += a[tid] * b[tid];
+      tid += blockDim.x * gridDim.x;
     }
 
-    cache[cacheIdx] += temp;
+    cache[cacheIdx] = temp;
 
     __syncthreads();
 
@@ -92,7 +92,7 @@ void device_data()
 
 void add()
 {
-  constexpr int N = 4096;
+  constexpr int N = 10;
   int a[N], b[N], c[N];
   int *dev_a, *dev_b, *dev_c;
 
@@ -110,10 +110,8 @@ void add()
   CUDA_CHECK(cudaMemcpy(dev_b, b, N * sizeof(int), cudaMemcpyHostToDevice));
   CUDA_CHECK(cudaMemcpy(dev_c, c, N * sizeof(int), cudaMemcpyHostToDevice));
 
-  kernels::add<<<128, 128>>>(a, b, c, N);
+  kernels::add<<<128, 128>>>(dev_a, dev_b, dev_c, N);
 
-  CUDA_CHECK(cudaMemcpy(a, dev_a, N * sizeof(int), cudaMemcpyDeviceToHost));
-  CUDA_CHECK(cudaMemcpy(b, dev_b, N * sizeof(int), cudaMemcpyDeviceToHost));
   CUDA_CHECK(cudaMemcpy(c, dev_c, N * sizeof(int), cudaMemcpyDeviceToHost));
 
   for (int i = 0; i < N; ++i)
@@ -131,7 +129,7 @@ void add()
 
 #define imin(a, b) a<b?a:b
 void dot(){
-  constexpr int N = 2 << 20;
+  constexpr int N = 1024;
   constexpr int blocks = imin(32, (N + threadsPerBlock - 1) / threadsPerBlock);
 
   float *a, *b, *partial_c;
@@ -141,7 +139,7 @@ void dot(){
 
   for(int i = 0; i < N; ++i) {
     a[i] = i;
-    b[i] = 1.0f / i;
+    b[i] = 2*i;
   }
 
   float *dev_a, *dev_b, *dev_c;
@@ -150,10 +148,11 @@ void dot(){
   CUDA_CHECK(cudaMalloc((void**)&dev_b, N * sizeof(float)));
   CUDA_CHECK(cudaMalloc((void**)&dev_c, blocks * sizeof(float)));
 
-  CUDA_CHECK(cudaMemcpy(dev_a, a, N, cudaMemcpyHostToDevice));
-  CUDA_CHECK(cudaMemcpy(dev_b, b, N, cudaMemcpyHostToDevice));
+  CUDA_CHECK(cudaMemcpy(dev_a, a, N * sizeof(float), cudaMemcpyHostToDevice));
+  CUDA_CHECK(cudaMemcpy(dev_b, b, N * sizeof(float), cudaMemcpyHostToDevice));
 
-  kernels::dot<<<blocks, threadsPerBlock>>>(dev_a, dev_b, partial_c, N);
+  kernels::dot<<<blocks, threadsPerBlock>>>(dev_a, dev_b, dev_c, N);
+  std::cout << std::format("Kernel launched\n");
 
   CUDA_CHECK(cudaMemcpy(partial_c, dev_c, blocks * sizeof(float), cudaMemcpyDeviceToHost));
 
@@ -163,6 +162,19 @@ void dot(){
   }
 
   std::cout << std::format("Dot: {}\n", result);
+  float _n = N - 1;
+  float expected = 2 * (_n * (_n + 1) * (2 * _n + 1) / 6 );
+  if (result != expected) {
+    std::cout << std::format("Error: {} != {}\n", result, expected);
+  }
+
+  CUDA_CHECK(cudaFree(dev_a));
+  CUDA_CHECK(cudaFree(dev_b));
+  CUDA_CHECK(cudaFree(dev_c));
+
+  delete[] a;
+  delete[] b;
+  delete[] partial_c;
 }
 
 int main()
