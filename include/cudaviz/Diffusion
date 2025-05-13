@@ -1,5 +1,3 @@
-
-
 #include <vector>
 
 namespace cudaviz
@@ -7,14 +5,16 @@ namespace cudaviz
     constexpr int DEFAULT_NX = 100;
     constexpr int DEFAULT_NY = 100;
     constexpr int DEFAULT_NT = 100;
-    constexpr float DEFAULT_D = 2.0f;
+    constexpr float DEFAULT_DT = 0.1f;
+    constexpr float DEFAULT_ALPHA = 2.0f;
     constexpr float DEFAULT_CENTRAL_TEMPERATURE = 100.0f;
     constexpr float DEFAULT_SPREAD = 10.0f;
-    std::vector<std::vector<std::vector<float>>> naiive_diffusion(
+    std::vector<std::vector<std::vector<float>>> naive_diffusion(
         int nx = DEFAULT_NX, 
         int ny = DEFAULT_NY, 
         int nt = DEFAULT_NT, 
-        float D = DEFAULT_D, 
+        float dt = DEFAULT_DT,
+        float alpha = DEFAULT_ALPHA, 
         float central_temperature = DEFAULT_CENTRAL_TEMPERATURE,
         float spread = DEFAULT_SPREAD
     );

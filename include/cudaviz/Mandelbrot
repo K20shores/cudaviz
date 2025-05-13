@@ -10,7 +10,13 @@ namespace cudaviz
     constexpr float DEFAULT_Y_CENTER = 0.0f;
     constexpr float DEFAULT_ZOOM = 1.1f;
 
-    std::vector<std::vector<int>> mandelbrot(int max_iter = DEFAULT_MAX_ITER,
+    std::vector<std::vector<int>> naive_mandelbrot(int max_iter = DEFAULT_MAX_ITER,
+                                             int N = DEFAULT_N,
+                                             float x_center = DEFAULT_X_CENTER,
+                                             float y_center = DEFAULT_Y_CENTER,
+                                             float zoom = DEFAULT_ZOOM);
+
+    std::vector<std::vector<int>> julia(int max_iter = DEFAULT_MAX_ITER,
                                              int N = DEFAULT_N,
                                              float x_center = DEFAULT_X_CENTER,
                                              float y_center = DEFAULT_Y_CENTER,

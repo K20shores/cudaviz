@@ -2,6 +2,8 @@
 
 namespace cudaviz
 {
-    void mandelbrot_iteration(int *grid, int N, int max_iter = 100, float x_center = 0.0f, float y_center = 0.0f, float zoom = 1.0f);
-    void naiive_diffusion_iteration(float *d_old, float *d_new, int nx, int ny, float alpha);
+    void naive_mandelbrot(int *grid, int N, int max_iter, float x_center, float y_center, float zoom);
+    void julia(int *grid, int N, int max_iter, float x_center, float y_center, float zoom);
+    void naive_diffusion_iteration(float *d_old, float *d_new, int nx, int ny, float diffusion_number);
+    void _ripple(float *grid, int N, int tick);
 }

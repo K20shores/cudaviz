@@ -23,7 +23,7 @@ namespace cudaviz
     }
   }
 
-  std::vector<std::vector<std::vector<float>>> naive_diffusion(int nx, int ny, int nt, float D, float central_temperature, float spread)
+  std::vector<std::vector<std::vector<float>>> naive_diffusion(int nx, int ny, int nt, float alpha, float dt, float central_temperature, float spread)
   {
     std::size_t sz = nx * ny * sizeof(float);
     std::vector<float> h_old = std::vector<float>(nx * ny, 0.0f);
@@ -47,14 +47,13 @@ namespace cudaviz
 
     // h = dx = dy 
     float h = 1.0f;
-    float dt = 0.1f;
-    float alpha = dt * D / (h * h);
+    float d = dt * alpha / (h * h);
     for (int t = 1; t < nt; ++t)
     {
       int num_substeps = static_cast<int>(1.0f / dt);
       for(int substep = 0; substep < num_substeps; ++substep) {
         float current_time = substep * dt;
-        naiive_diffusion_iteration(d_old, d_new, nx, ny, alpha);
+        naive_diffusion_iteration(d_old, d_new, nx, ny, d);
         std::swap(d_old, d_new);
       }
 

@@ -1,0 +1,11 @@
+#pragma once
+
+#include <vector>
+
+namespace cudaviz
+{
+    constexpr int DEFAULT_DIM = 1024;
+    constexpr int DEFAULT_TICK = 0;
+
+    std::vector<std::vector<float>> ripple(int N = DEFAULT_DIM, int tick = DEFAULT_TICK);
+}
