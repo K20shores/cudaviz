@@ -52,6 +52,5 @@ PYBIND11_MODULE(_cudaviz, m)
 
       m.def("_ray_trace", &cudaviz::ray_trace,
             py::arg("N") = cudaviz::DEFAULT_RAY_DIM,
-            py::arg("n_spheres") = cudaviz::DEFAULT_N_SPHERES,
             "Create a ray-traced image from randomly genreated spheres");
 }

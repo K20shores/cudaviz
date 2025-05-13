@@ -13,7 +13,7 @@
 
 namespace cudaviz
 {
-    std::vector<std::vector<RGB>> ray_trace(int N, int n_spheres)
+    std::vector<std::vector<RGB>> ray_trace(int N)
     {
         cudaEvent_t start, stop;
         CUDA_CHECK(cudaEventCreate(&start));
@@ -26,7 +26,7 @@ namespace cudaviz
 
         CUDA_CHECK(cudaMalloc((void **)&device_data, N * N * 3));
 
-        kernels::ray_trace(device_data, N, n_spheres);
+        kernels::ray_trace(device_data, N);
 
         CUDA_CHECK(cudaMemcpy(host_data.data(), device_data, N * N * 3, cudaMemcpyDeviceToHost));
 
@@ -37,6 +37,9 @@ namespace cudaviz
         CUDA_CHECK(cudaEventElapsedTime(&elapsed_time, start, stop));
 
         std::cout << std::format("Generation time: {}\n", elapsed_time);
+
+        CUDA_CHECK(cudaEventDestroy(start));
+        CUDA_CHECK(cudaEventDestroy(stop));
 
         CUDA_CHECK(cudaFree(device_data));
 

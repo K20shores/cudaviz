@@ -10,8 +10,8 @@ namespace cudaviz
         float b;
     };
 
-    constexpr int DEFAULT_N_SPHERES = 10;
-    constexpr int DEFAULT_RAY_DIM = 10;
+    constexpr int N_SPHERES = 10;
+    constexpr int DEFAULT_RAY_DIM = 1024;
 
-    std::vector<std::vector<RGB>> ray_trace(int N = DEFAULT_RAY_DIM, int n_spheres = DEFAULT_N_SPHERES);
+    std::vector<std::vector<RGB>> ray_trace(int N = DEFAULT_RAY_DIM);
 }

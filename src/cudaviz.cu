@@ -1,4 +1,5 @@
 #include <cudaviz/kernels.hpp>
+#include <cudaviz/RayTrace>
 
 #include "check_error.hpp"
 
@@ -159,7 +160,7 @@ namespace cudaviz
             }
         }
 
-        __global__ void ray_trace(unsigned char *data, Sphere *spheres, int N, int n_spheres)
+        __global__ void ray_trace(unsigned char *data, Sphere *spheres, int N)
         {
             int x = threadIdx.x + blockDim.x * blockIdx.x;
             int y = threadIdx.y + blockDim.y * blockIdx.y;
@@ -189,7 +190,7 @@ namespace cudaviz
 
             float r = 1, g = 1, b = 1;
             float maxz = -INF;
-            for (int i = 0; i < n_spheres; ++i)
+            for (int i = 0; i < N_SPHERES; ++i)
             {
                 float fscale;
                 float t = spheres[i].hit(ox, oy, &fscale);
@@ -239,13 +240,12 @@ namespace cudaviz
             device::ripple<<<numBlocks, threadsPerBlock>>>(grid, N, tick);
         }
 
-        void ray_trace(unsigned char *data, int N, int n_spheres)
+        __constant__ device::Sphere s[N_SPHERES];
+        void ray_trace(unsigned char *data, int N)
         {
-            device::Sphere *s;
-            CUDA_CHECK(cudaMalloc((void **)&s, n_spheres * sizeof(device::Sphere)));
-            std::vector<device::Sphere> spheres(n_spheres);
+            std::vector<device::Sphere> spheres(N_SPHERES);
 
-            for (int i = 0; i < n_spheres; ++i)
+            for (int i = 0; i < N_SPHERES; ++i)
             {
                 spheres[i].r = rnd(1.0f);
                 spheres[i].g = rnd(1.0f);
@@ -264,13 +264,11 @@ namespace cudaviz
                 //                          spheres[i].radius);
             }
 
-            CUDA_CHECK(cudaMemcpy(s, spheres.data(), n_spheres * sizeof(device::Sphere), cudaMemcpyHostToDevice));
+            CUDA_CHECK(cudaMemcpyToSymbol(s, spheres.data(), N_SPHERES * sizeof(device::Sphere)));
 
             dim3 threadsPerBlock(16, 16);
             dim3 numBlocks((N + 15) / 16, (N + 15) / 16);
-            device::ray_trace<<<numBlocks, threadsPerBlock>>>(data, s, N, n_spheres);
-
-            CUDA_CHECK(cudaFree(s));
+            device::ray_trace<<<numBlocks, threadsPerBlock>>>(data, s, N);
         }
     }
 }
