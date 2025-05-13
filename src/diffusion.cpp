@@ -8,6 +8,7 @@
 #include <string>
 #include <stdexcept>
 #include <math.h>
+#include <format>
 
 #include <cuda_runtime.h>
 
@@ -52,7 +53,6 @@ namespace cudaviz
     {
       int num_substeps = static_cast<int>(1.0f / dt);
       for(int substep = 0; substep < num_substeps; ++substep) {
-        float current_time = substep * dt;
         naive_diffusion_iteration(d_old, d_new, nx, ny, d);
         std::swap(d_old, d_new);
       }

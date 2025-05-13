@@ -4,6 +4,7 @@
 #include <format>
 
 #include "check_error.hpp"
+#include <cudaviz/cudaviz>
 
 constexpr int threadsPerBlock = 256;
 
@@ -75,7 +76,8 @@ void device_data()
         "  Max Threads Dim: ({}, {}, {})\n"
         "  Max Grid Size: ({}, {}, {})\n"
         "  Clock Rate: {} kHz\n"
-        "  Compute Capability: {}.{}\n",
+        "  Compute Capability: {}.{}\n"
+        "  Maximum number of threads: {}\n",
         i,
         prop.name,
         prop.totalGlobalMem,
@@ -86,7 +88,9 @@ void device_data()
         prop.maxThreadsDim[0], prop.maxThreadsDim[1], prop.maxThreadsDim[2],
         prop.maxGridSize[0], prop.maxGridSize[1], prop.maxGridSize[2],
         prop.clockRate / 1000,
-        prop.major, prop.minor);
+        prop.major, prop.minor,
+        prop.maxThreadsPerMultiProcessor * prop.multiProcessorCount
+      );
   }
 }
 
@@ -182,4 +186,5 @@ int main()
   device_data();
   add();
   dot();
+  cudaviz::naive_diffusion();
 }

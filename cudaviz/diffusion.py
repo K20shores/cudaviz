@@ -21,4 +21,4 @@ def naive_diffusion(nx: int = 100, ny: int = 100, nt: int = 100, dt: float = 0.1
     list[list[list]]: A 3D list representing the diffusion pattern.
   """
 
-  return _naive_diffusion(nx, ny, nt, dt, alpha, central_temperature, spread)
+  return _naive_diffusion(nx, ny, nt, alpha, dt, central_temperature, spread)

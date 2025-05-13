@@ -1,4 +1,5 @@
-#include <cudaviz/Mandelbrot>
+#include <cudaviz/kernels.hpp>
+
 #include <iostream>
 
 namespace cudaviz
