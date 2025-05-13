@@ -112,9 +112,9 @@ void add()
 
   kernels::add<<<128, 128>>>(a, b, c, N);
 
-  CUDA_CHECK(cudaMemcpy(a, dev_a, sizeof(int), cudaMemcpyDeviceToHost));
-  CUDA_CHECK(cudaMemcpy(b, dev_b, sizeof(int), cudaMemcpyDeviceToHost));
-  CUDA_CHECK(cudaMemcpy(c, dev_c, sizeof(int), cudaMemcpyDeviceToHost));
+  CUDA_CHECK(cudaMemcpy(a, dev_a, N * sizeof(int), cudaMemcpyDeviceToHost));
+  CUDA_CHECK(cudaMemcpy(b, dev_b, N * sizeof(int), cudaMemcpyDeviceToHost));
+  CUDA_CHECK(cudaMemcpy(c, dev_c, N * sizeof(int), cudaMemcpyDeviceToHost));
 
   for (int i = 0; i < N; ++i)
   {

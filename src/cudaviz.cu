@@ -75,12 +75,12 @@ namespace cudaviz
             {
                 int index = j * N + i;
                 grid[index] = max_iter;
-                for (int i = 0; i < max_iter; ++i)
+                for (int iter = 0; iter < max_iter; ++iter)
                 {
                     z = z * z + c;
                     if (z.magnitude2() > 1000)
                     {
-                        grid[index] = i;
+                        grid[index] = iter;
                         break;
                     }
                 }
