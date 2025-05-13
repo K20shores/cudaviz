@@ -9,11 +9,8 @@
 #include <format>
 
 #define INF 2e10f
+#define rnd(x) (x * rand() / RAND_MAX)
 
-inline float rnd(float x)
-{
-    return x * static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-}
 namespace cudaviz
 {
     namespace device
@@ -163,7 +160,8 @@ namespace cudaviz
             }
         }
 
-        __global__ void ray_trace(unsigned char *data, Sphere *spheres, int N)
+        __constant__ device::Sphere spheres[N_SPHERES];
+        __global__ void ray_trace(unsigned char *data, int N)
         {
             int x = threadIdx.x + blockDim.x * blockIdx.x;
             int y = threadIdx.y + blockDim.y * blockIdx.y;
@@ -177,7 +175,7 @@ namespace cudaviz
             // if (x == 0 && y == 0)
             // {
 
-            //     for (int i = 0; i < n_spheres; ++i)
+            //     for (int i = 0; i < N_SPHERES; ++i)
             //     {
             //         printf("(%f, %f, %f) color (%f, %f, %f), radius: %f\n",
             //             spheres[i].x,
@@ -243,7 +241,6 @@ namespace cudaviz
             device::ripple<<<numBlocks, threadsPerBlock>>>(grid, N, tick);
         }
 
-        __constant__ device::Sphere s[N_SPHERES];
         void ray_trace(unsigned char *data, int N)
         {
             std::vector<device::Sphere> spheres(N_SPHERES);
@@ -267,11 +264,11 @@ namespace cudaviz
                 //                          spheres[i].radius);
             }
 
-            CUDA_CHECK(cudaMemcpyToSymbol(s, spheres.data(), N_SPHERES * sizeof(device::Sphere)));
+            CUDA_CHECK(cudaMemcpyToSymbol(device::spheres, spheres.data(), N_SPHERES * sizeof(device::Sphere)));
 
             dim3 threadsPerBlock(16, 16);
             dim3 numBlocks((N + 15) / 16, (N + 15) / 16);
-            device::ray_trace<<<numBlocks, threadsPerBlock>>>(data, s, N);
+            device::ray_trace<<<numBlocks, threadsPerBlock>>>(data, N);
         }
     }
 }
