@@ -165,8 +165,8 @@ void add()
 }
 
 #define imin(a, b) a<b?a:b
-void dot(){
-  constexpr int N = 1024;
+float dot_malloc(){
+  constexpr int N = 100*1024*1024;
   constexpr int blocks = imin(32, (N + threadsPerBlock - 1) / threadsPerBlock);
 
   float *a, *b, *partial_c;
@@ -181,6 +181,13 @@ void dot(){
 
   float *dev_a, *dev_b, *dev_c;
 
+  cudaEvent_t start, stop;
+
+  CUDA_CHECK(cudaEventCreate(&start));
+  CUDA_CHECK(cudaEventCreate(&stop));
+
+  CUDA_CHECK(cudaEventRecord(start, 0));
+
   CUDA_CHECK(cudaMalloc((void**)&dev_a, N * sizeof(float)));
   CUDA_CHECK(cudaMalloc((void**)&dev_b, N * sizeof(float)));
   CUDA_CHECK(cudaMalloc((void**)&dev_c, blocks * sizeof(float)));
@@ -189,9 +196,13 @@ void dot(){
   CUDA_CHECK(cudaMemcpy(dev_b, b, N * sizeof(float), cudaMemcpyHostToDevice));
 
   kernels::dot<<<blocks, threadsPerBlock>>>(dev_a, dev_b, dev_c, N);
-  std::cout << std::format("Kernel launched\n");
 
   CUDA_CHECK(cudaMemcpy(partial_c, dev_c, blocks * sizeof(float), cudaMemcpyDeviceToHost));
+
+  CUDA_CHECK(cudaEventRecord(stop, 0));
+  CUDA_CHECK(cudaEventSynchronize(stop));
+  float elapsed;
+  CUDA_CHECK(cudaEventElapsedTime(&elapsed, start, stop));
 
   float result = 0;
   for(int i = 0; i < blocks; ++i) {
@@ -212,6 +223,63 @@ void dot(){
   delete[] a;
   delete[] b;
   delete[] partial_c;
+
+  return elapsed;
+}
+
+float dot_host_malloc(){
+  constexpr int N = 100*1024*1024;
+  constexpr int blocks = imin(32, (N + threadsPerBlock - 1) / threadsPerBlock);
+
+  float *a, *b, *partial_c;
+  float *dev_a, *dev_b, *dev_c;
+
+  cudaEvent_t start, stop;
+
+  CUDA_CHECK(cudaEventCreate(&start));
+  CUDA_CHECK(cudaEventCreate(&stop));
+
+  CUDA_CHECK(cudaHostAlloc((void**)&a, N * sizeof(float), cudaHostAllocWriteCombined | cudaHostAllocMapped));
+  CUDA_CHECK(cudaHostAlloc((void**)&b, N * sizeof(float), cudaHostAllocWriteCombined | cudaHostAllocMapped));
+  CUDA_CHECK(cudaHostAlloc((void**)&partial_c, blocks * sizeof(float), cudaHostAllocMapped));
+
+  CUDA_CHECK(cudaHostGetDevicePointer(&dev_a, a, 0));
+  CUDA_CHECK(cudaHostGetDevicePointer(&dev_b, b, 0));
+  CUDA_CHECK(cudaHostGetDevicePointer(&dev_c, partial_c, 0));
+
+  for(int i = 0; i < N; ++i) {
+    a[i] = i;
+    b[i] = 2*i;
+  }
+
+  CUDA_CHECK(cudaEventRecord(start, 0));
+
+  kernels::dot<<<blocks, threadsPerBlock>>>(dev_a, dev_b, dev_c, N);
+
+  CUDA_CHECK(cudaDeviceSynchronize());
+  CUDA_CHECK(cudaEventRecord(stop, 0));
+  CUDA_CHECK(cudaEventSynchronize(stop));
+
+  float elapsed;
+  CUDA_CHECK(cudaEventElapsedTime(&elapsed, start, stop));
+
+  float result = 0;
+  for(int i = 0; i < blocks; ++i) {
+    result += partial_c[i];
+  }
+
+  std::cout << std::format("Dot: {}\n", result);
+  float _n = N - 1;
+  float expected = 2 * (_n * (_n + 1) * (2 * _n + 1) / 6 );
+  if (result != expected) {
+    std::cout << std::format("Error: {} != {}\n", result, expected);
+  }
+
+  CUDA_CHECK(cudaFreeHost(a));
+  CUDA_CHECK(cudaFreeHost(b));
+  CUDA_CHECK(cudaFreeHost(partial_c));
+
+  return elapsed;
 }
 
 void histogram(){
@@ -401,7 +469,6 @@ void streams() {
   CUDA_CHECK(cudaStreamSynchronize(stream));
 
   CUDA_CHECK(cudaEventRecord(stop, 0));
-
   CUDA_CHECK(cudaEventSynchronize(stop));
 
   float elapsed;
@@ -505,13 +572,26 @@ void streams_overlapped() {
   CUDA_CHECK(cudaStreamDestroy(stream2));
 }
 
+void mapped() {
+  cudaDeviceProp prop;
+  int whichDevice;
+  CUDA_CHECK(cudaGetDevice(&whichDevice));
+  CUDA_CHECK(cudaGetDeviceProperties(&prop, whichDevice));
+  if (prop.canMapHostMemory != 1) {
+    std::cout << "Device cannot map memory\n";
+  }
+
+  CUDA_CHECK(cudaSetDeviceFlags(cudaDeviceMapHost));
+  std::cout << std::format("Regular dot: {:3.1f} ms\nPinned dot: {:3.1f} ms\n", dot_malloc(), dot_host_malloc());
+}
+
 int main()
 {
   device_data();
   add();
-  dot();
   histogram();
   memory_time();
   streams();
   streams_overlapped();
+  mapped();
 }
