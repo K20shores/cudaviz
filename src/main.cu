@@ -398,9 +398,9 @@ void streams() {
     CUDA_CHECK(cudaMemcpyAsync(c + i, dev_c, N * sizeof(int), cudaMemcpyDeviceToHost, stream));
   }
 
-  CUDA_CHECK(cudaStreamSynchronize(0));
+  CUDA_CHECK(cudaStreamSynchronize(stream));
 
-  CUDA_CHECK(cudaEventRecord(stop, stream));
+  CUDA_CHECK(cudaEventRecord(stop, 0));
 
   CUDA_CHECK(cudaEventSynchronize(stop));
 
