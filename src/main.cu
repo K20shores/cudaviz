@@ -256,10 +256,93 @@ void histogram(){
   CUDA_CHECK(cudaFree(dev_hist));
 }
 
+float cuda_malloc_test(int size, bool up) {
+  cudaEvent_t start, stop;
+  int *dev_a;
+  float elapsed_time;
+
+  CUDA_CHECK(cudaEventCreate(&start));
+  CUDA_CHECK(cudaEventCreate(&stop));
+
+  std::vector<int> a(size);
+
+  CUDA_CHECK(cudaMalloc((void**)&dev_a, size * sizeof(*dev_a)));
+
+  CUDA_CHECK(cudaEventRecord(start, 0));
+
+  for(int i = 0; i < 100; ++i) {
+    if (up) {
+      CUDA_CHECK(cudaMemcpy(dev_a, a.data(), size * sizeof(int), cudaMemcpyHostToDevice));
+    }
+    else {
+      CUDA_CHECK(cudaMemcpy(a.data(), dev_a, size * sizeof(int), cudaMemcpyHostToDevice));
+    }
+  }
+
+  CUDA_CHECK(cudaEventRecord(stop, 0));
+  CUDA_CHECK(cudaEventSynchronize(stop));
+  CUDA_CHECK(cudaEventElapsedTime(&elapsed_time, start, stop));
+  CUDA_CHECK(cudaFree(dev_a));
+  CUDA_CHECK(cudaEventDestroy(start));
+  CUDA_CHECK(cudaEventDestroy(stop));
+
+  return elapsed_time;
+} 
+
+float cuda_host_malloc_test(int size, bool up) {
+  cudaEvent_t start, stop;
+  int *a, *dev_a;
+  float elapsed_time;
+
+  CUDA_CHECK(cudaEventCreate(&start));
+  CUDA_CHECK(cudaEventCreate(&stop));
+
+  CUDA_CHECK(cudaHostAlloc((void**)&a, size * sizeof(*a), cudaHostAllocDefault));
+
+  CUDA_CHECK(cudaMalloc((void**)&dev_a, size * sizeof(*dev_a)));
+
+  CUDA_CHECK(cudaEventRecord(start, 0));
+
+  for(int i = 0; i < 100; ++i) {
+    if (up) {
+      CUDA_CHECK(cudaMemcpy(dev_a, a, size * sizeof(int), cudaMemcpyHostToDevice));
+    }
+    else {
+      CUDA_CHECK(cudaMemcpy(a, dev_a, size * sizeof(int), cudaMemcpyHostToDevice));
+    }
+  }
+
+  CUDA_CHECK(cudaFreeHost(a));
+  CUDA_CHECK(cudaEventRecord(stop, 0));
+  CUDA_CHECK(cudaEventSynchronize(stop));
+  CUDA_CHECK(cudaEventElapsedTime(&elapsed_time, start, stop));
+  CUDA_CHECK(cudaFree(dev_a));
+  CUDA_CHECK(cudaEventDestroy(start));
+  CUDA_CHECK(cudaEventDestroy(stop));
+
+  return elapsed_time;
+}
+
+void memory_time() {
+  constexpr int N = 10*1024*1024;
+  float elapsed;
+  float MB = 100.0f * float(N) * sizeof(int) / 1024.0f / 1024.0f;
+
+  elapsed = cuda_malloc_test(N, true);
+  std::cout << std::format("Time using cuda malloc up: {:3.1f} ms\t{:3.1f} MB/s\n", elapsed, MB/(elapsed/1000));
+  elapsed = cuda_malloc_test(N, false);
+  std::cout << std::format("Time using cuda malloc down: {:3.1f} ms\t{:3.1f} MB/s\n", elapsed, MB/(elapsed/1000));
+  elapsed = cuda_host_malloc_test(N, true);
+  std::cout << std::format("Time using cuda host malloc up: {:3.1f} ms\t{:3.1f} MB/s\n", elapsed, MB/(elapsed/1000));
+  elapsed = cuda_host_malloc_test(N, false);
+  std::cout << std::format("Time using cuda host malloc down: {:3.1f} ms\t{:3.1f} MB/s\n", elapsed, MB/(elapsed/1000));
+}
+
 int main()
 {
   device_data();
   add();
   dot();
   histogram();
+  memory_time();
 }
