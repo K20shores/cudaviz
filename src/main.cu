@@ -70,6 +70,19 @@ namespace kernels
 
     atomicAdd(&(hist[threadIdx.x]), temp[threadIdx.x]);
   }
+
+  __global__ void average(int *a, int *b, int *c, int N)
+  {
+    int idx = threadIdx.x + blockIdx.x * blockDim.x;
+    if (idx < N)
+    {
+      int idx1 = (idx + 1) % 256;
+      int idx2 = (idx + 2) % 256;
+      float as = (a[idx] + a[idx1] + a[idx2]) / 3.0f;
+      float bs = (b[idx] + b[idx1] + b[idx2]) / 3.0f;
+      c[idx] = (as + bs) / 2.0f;
+    }
+  }
 }
 
 void device_data()
@@ -338,6 +351,160 @@ void memory_time() {
   std::cout << std::format("Time using cuda host malloc down: {:3.1f} ms\t{:3.1f} MB/s\n", elapsed, MB/(elapsed/1000));
 }
 
+void streams() {
+  cudaDeviceProp prop;
+  int whichDevice;
+  CUDA_CHECK(cudaGetDevice(&whichDevice));
+  CUDA_CHECK(cudaGetDeviceProperties(&prop, whichDevice));
+  if (!prop.deviceOverlap) {
+    std::cout << "Device will not handle overlaps, so no speedup from streams.\n";
+  }
+
+  cudaEvent_t start, stop;
+
+  CUDA_CHECK(cudaEventCreate(&start));
+  CUDA_CHECK(cudaEventCreate(&stop));
+
+  CUDA_CHECK(cudaEventRecord(start, 0));
+
+  cudaStream_t stream;
+  CUDA_CHECK(cudaStreamCreate(&stream));
+
+  int *a, *b, *c;
+  int *dev_a, *dev_b, *dev_c;
+
+  int N = 1024*1024;
+  int full_data = N*20;
+
+  CUDA_CHECK(cudaMalloc((void**)&dev_a, N * sizeof(int)));
+  CUDA_CHECK(cudaMalloc((void**)&dev_b, N * sizeof(int)));
+  CUDA_CHECK(cudaMalloc((void**)&dev_c, N * sizeof(int)));
+
+  CUDA_CHECK(cudaHostAlloc((void**)&a, full_data * sizeof(int), cudaHostAllocDefault));
+  CUDA_CHECK(cudaHostAlloc((void**)&b, full_data * sizeof(int), cudaHostAllocDefault));
+  CUDA_CHECK(cudaHostAlloc((void**)&c, full_data * sizeof(int), cudaHostAllocDefault));
+
+  for(int i = 0; i < full_data; ++i) {
+    a[i] = rand();
+    b[i] = rand();
+  }
+
+  for(int i = 0; i < full_data; i += N) {
+    CUDA_CHECK(cudaMemcpyAsync(dev_a, a + i, N * sizeof(int), cudaMemcpyHostToDevice, stream));
+    CUDA_CHECK(cudaMemcpyAsync(dev_b, b + i, N * sizeof(int), cudaMemcpyHostToDevice, stream));
+
+    kernels::average<<<N/256, 256, 0, stream>>>(dev_a, dev_b, dev_c, N);
+
+    CUDA_CHECK(cudaMemcpyAsync(c + i, dev_c, N * sizeof(int), cudaMemcpyDeviceToHost, stream));
+  }
+
+  CUDA_CHECK(cudaStreamSynchronize(0));
+
+  CUDA_CHECK(cudaEventRecord(stop, stream));
+
+  CUDA_CHECK(cudaEventSynchronize(stop));
+
+  float elapsed;
+  CUDA_CHECK(cudaEventElapsedTime(&elapsed, start, stop));
+
+  std::cout << std::format("Stream time: {:3.1f} ms\n", elapsed);
+
+  CUDA_CHECK(cudaFreeHost(a));
+  CUDA_CHECK(cudaFreeHost(b));
+  CUDA_CHECK(cudaFreeHost(c));
+
+  CUDA_CHECK(cudaFree(dev_a));
+  CUDA_CHECK(cudaFree(dev_b));
+  CUDA_CHECK(cudaFree(dev_c));
+
+  CUDA_CHECK(cudaStreamDestroy(stream));
+}
+
+void streams_overlapped() {
+  cudaDeviceProp prop;
+  int whichDevice;
+  CUDA_CHECK(cudaGetDevice(&whichDevice));
+  CUDA_CHECK(cudaGetDeviceProperties(&prop, whichDevice));
+  if (!prop.deviceOverlap) {
+    std::cout << "Device will not handle overlaps, so no speedup from streams.\n";
+  }
+
+  cudaEvent_t start, stop;
+
+  CUDA_CHECK(cudaEventCreate(&start));
+  CUDA_CHECK(cudaEventCreate(&stop));
+
+  CUDA_CHECK(cudaEventRecord(start, 0));
+
+  cudaStream_t stream1, stream2;;
+  CUDA_CHECK(cudaStreamCreate(&stream1));
+  CUDA_CHECK(cudaStreamCreate(&stream2));
+
+  int *a, *b, *c;
+  int *dev_a0, *dev_b0, *dev_c0;
+  int *dev_a1, *dev_b1, *dev_c1;
+
+  int N = 1024*1024;
+  int full_data = N*20;
+
+  CUDA_CHECK(cudaMalloc((void**)&dev_a0, N * sizeof(int)));
+  CUDA_CHECK(cudaMalloc((void**)&dev_b0, N * sizeof(int)));
+  CUDA_CHECK(cudaMalloc((void**)&dev_c0, N * sizeof(int)));
+
+  CUDA_CHECK(cudaMalloc((void**)&dev_a1, N * sizeof(int)));
+  CUDA_CHECK(cudaMalloc((void**)&dev_b1, N * sizeof(int)));
+  CUDA_CHECK(cudaMalloc((void**)&dev_c1, N * sizeof(int)));
+
+  CUDA_CHECK(cudaHostAlloc((void**)&a, full_data * sizeof(int), cudaHostAllocDefault));
+  CUDA_CHECK(cudaHostAlloc((void**)&b, full_data * sizeof(int), cudaHostAllocDefault));
+  CUDA_CHECK(cudaHostAlloc((void**)&c, full_data * sizeof(int), cudaHostAllocDefault));
+
+  for(int i = 0; i < full_data; ++i) {
+    a[i] = rand();
+    b[i] = rand();
+  }
+
+  for(int i = 0; i < full_data; i += 2*N) {
+    CUDA_CHECK(cudaMemcpyAsync(dev_a0, a + i, N * sizeof(int), cudaMemcpyHostToDevice, stream1));
+    CUDA_CHECK(cudaMemcpyAsync(dev_a1, a + i + N, N * sizeof(int), cudaMemcpyHostToDevice, stream2));
+
+    CUDA_CHECK(cudaMemcpyAsync(dev_b0, b + i, N * sizeof(int), cudaMemcpyHostToDevice, stream1));
+    CUDA_CHECK(cudaMemcpyAsync(dev_b1, b + i + N, N * sizeof(int), cudaMemcpyHostToDevice, stream2));
+
+    kernels::average<<<N/256, 256, 0, stream1>>>(dev_a0, dev_b0, dev_c0, N);
+    kernels::average<<<N/256, 256, 0, stream2>>>(dev_a1, dev_b1, dev_c1, N);
+
+    CUDA_CHECK(cudaMemcpyAsync(c + i, dev_c0, N * sizeof(int), cudaMemcpyDeviceToHost, stream1));
+    CUDA_CHECK(cudaMemcpyAsync(c + i + N, dev_c1, N * sizeof(int), cudaMemcpyDeviceToHost, stream2));
+  }
+
+  CUDA_CHECK(cudaStreamSynchronize(stream1));
+  CUDA_CHECK(cudaStreamSynchronize(stream2));
+
+  CUDA_CHECK(cudaEventRecord(stop, 0));
+
+  CUDA_CHECK(cudaEventSynchronize(stop));
+
+  float elapsed;
+  CUDA_CHECK(cudaEventElapsedTime(&elapsed, start, stop));
+
+  std::cout << std::format("Stream overlapped time: {:3.1f} ms\n", elapsed);
+
+  CUDA_CHECK(cudaFreeHost(a));
+  CUDA_CHECK(cudaFreeHost(b));
+  CUDA_CHECK(cudaFreeHost(c));
+
+  CUDA_CHECK(cudaFree(dev_a0));
+  CUDA_CHECK(cudaFree(dev_b0));
+  CUDA_CHECK(cudaFree(dev_c0));
+  CUDA_CHECK(cudaFree(dev_a1));
+  CUDA_CHECK(cudaFree(dev_b1));
+  CUDA_CHECK(cudaFree(dev_c1));
+
+  CUDA_CHECK(cudaStreamDestroy(stream1));
+  CUDA_CHECK(cudaStreamDestroy(stream2));
+}
+
 int main()
 {
   device_data();
@@ -345,4 +512,6 @@ int main()
   dot();
   histogram();
   memory_time();
+  streams();
+  streams_overlapped();
 }
