@@ -54,6 +54,21 @@ namespace kernels
   }
 
   __global__ void histogram(unsigned char* buffer, int N, unsigned int * hist) {
+    __shared__ unsigned int temp[256];
+    temp[threadIdx.x] = 0;
+
+    int i = threadIdx.x + blockDim.x * blockIdx.x;
+    int stride = blockDim.x * gridDim.x;
+
+    __syncthreads();
+
+    while (i < N) {
+      atomicAdd(&(temp[buffer[i]]), 1);
+      i += stride;
+    }
+    __syncthreads();
+
+    atomicAdd(&(hist[threadIdx.x]), temp[threadIdx.x]);
   }
 }
 
@@ -218,6 +233,8 @@ void histogram(){
   int blocks = prop.multiProcessorCount;
 
   kernels::histogram<<<blocks*2, 256>>>(dev_buffer, N, dev_hist);
+
+  CUDA_CHECK(cudaMemcpy(hist.data(), dev_hist, 256 * sizeof(unsigned int), cudaMemcpyDeviceToHost));
 
   CUDA_CHECK(cudaEventRecord(stop, 0));
   CUDA_CHECK(cudaEventSynchronize(stop));
