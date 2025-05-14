@@ -201,7 +201,6 @@ void dot(){
   delete[] partial_c;
 }
 
-
 void histogram(){
   constexpr int N = 100 * 1024 * 1024;
   std::vector<unsigned char> buffer(N);
@@ -226,7 +225,6 @@ void histogram(){
   CUDA_CHECK(cudaMemset(dev_hist, 0, 256 * sizeof(unsigned int)));
 
   std::vector<unsigned int> hist(256);
-  CUDA_CHECK(cudaMemcpy(hist.data(), dev_hist, 256 * sizeof(unsigned int), cudaMemcpyDeviceToHost));
 
   cudaDeviceProp prop;
   CUDA_CHECK(cudaGetDeviceProperties(&prop, 0));
