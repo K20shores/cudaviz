@@ -436,7 +436,7 @@ void streams_overlapped() {
 
   CUDA_CHECK(cudaEventRecord(start, 0));
 
-  cudaStream_t stream1, stream2;;
+  cudaStream_t stream1, stream2;
   CUDA_CHECK(cudaStreamCreate(&stream1));
   CUDA_CHECK(cudaStreamCreate(&stream2));
 
