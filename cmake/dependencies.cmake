@@ -10,3 +10,8 @@ FetchContent_Declare(pybind11
 )
 
 FetchContent_MakeAvailable(pybind11)
+
+################################################################################
+# cuda
+
+find_package(CUDAToolkit REQUIRED)

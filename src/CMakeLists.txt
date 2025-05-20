@@ -13,8 +13,8 @@ target_include_directories(cudaviz
 
 target_link_libraries(cudaviz 
     PUBLIC 
-        cuda
-        cudart
+        CUDA::cuda_driver
+        CUDA::cudart
 )
 
 set_target_properties(cudaviz PROPERTIES 

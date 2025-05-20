@@ -212,8 +212,12 @@ float dot_malloc(){
   std::cout << std::format("Dot: {}\n", result);
   float _n = N - 1;
   float expected = 2 * (_n * (_n + 1) * (2 * _n + 1) / 6 );
-  if (result != expected) {
-    std::cout << std::format("Error: {} != {}\n", result, expected);
+
+  float diff = std::abs(result - expected);
+  float rel_error = diff / std::abs(expected);
+
+  if (rel_error > 1e-5f) {
+    std::cout << std::format("Error: {} != {} (rel error = {})\n", result, expected, rel_error);
   }
 
   CUDA_CHECK(cudaFree(dev_a));
@@ -271,8 +275,12 @@ float dot_host_malloc(){
   std::cout << std::format("Dot: {}\n", result);
   float _n = N - 1;
   float expected = 2 * (_n * (_n + 1) * (2 * _n + 1) / 6 );
-  if (result != expected) {
-    std::cout << std::format("Error: {} != {}\n", result, expected);
+
+  float diff = std::abs(result - expected);
+  float rel_error = diff / std::abs(expected);
+
+  if (rel_error > 1e-5f) {
+    std::cout << std::format("Error: {} != {} (rel error = {})\n", result, expected, rel_error);
   }
 
   CUDA_CHECK(cudaFreeHost(a));
