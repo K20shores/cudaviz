@@ -217,6 +217,7 @@ namespace cudaviz
             if (i < N && j < N)
             {
                 int c_ij = i * N + j;
+                C[c_ij] = 0;
                 for (int k = 0; k < N; ++k)
                 {
                     int a_ik = i * N + k;

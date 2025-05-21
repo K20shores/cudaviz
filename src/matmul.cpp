@@ -31,7 +31,6 @@ namespace cudaviz
 
         CUDA_CHECK(cudaMemset(device_A, 2, N * N * sizeof(float)));
         CUDA_CHECK(cudaMemset(device_B, 3, N * N * sizeof(float)));
-        CUDA_CHECK(cudaMemset(device_C, 0, N * N * sizeof(float)));
 
         kernels::matmul(device_A, device_B, device_C, N);
 
