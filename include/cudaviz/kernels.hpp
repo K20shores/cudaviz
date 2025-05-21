@@ -8,5 +8,6 @@ namespace cudaviz
         void naive_diffusion_iteration(float *d_old, float *d_new, int nx, int ny, float diffusion_number);
         void ripple(float *grid, int N, int tick);
         void ray_trace(unsigned char* data, int N);
+        void matmul(float* A, float* B, float* C, int N);
     }
 }

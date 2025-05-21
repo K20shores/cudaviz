@@ -209,6 +209,22 @@ namespace cudaviz
             data[offset * 3 + 1] = (int)(g * 255);
             data[offset * 3 + 2] = (int)(b * 255);
         }
+
+        __global__ void matmul(float *A, float *B, float *C, int N)
+        {
+            int i = threadIdx.x + blockDim.x * blockIdx.x;
+            int j = threadIdx.y + blockDim.y * blockIdx.y;
+            if (i < N && j < N)
+            {
+                int c_ij = i * N + j;
+                for (int k = 0; k < N; ++k)
+                {
+                    int a_ik = i * N + k;
+                    int b_kj = k * N + j;
+                    C[c_ij] += A[a_ik] * B[b_kj];
+                }
+            }
+        }
     }
 
     namespace kernels
@@ -269,6 +285,13 @@ namespace cudaviz
             dim3 threadsPerBlock(16, 16);
             dim3 numBlocks((N + 15) / 16, (N + 15) / 16);
             device::ray_trace<<<numBlocks, threadsPerBlock>>>(data, N);
+        }
+
+        void matmul(float *A, float *B, float *C, int N)
+        {
+            dim3 threadsPerBlock(16, 16);
+            dim3 numBlocks((N + 15) / 16, (N + 15) / 16);
+            device::matmul<<<numBlocks, threadsPerBlock>>>(A, B, C, N);
         }
     }
 }

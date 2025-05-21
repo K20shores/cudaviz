@@ -1,0 +1,7 @@
+#include <vector>
+
+namespace cudaviz
+{
+    // generate 2 NxN matrices and multiply them
+    void matmul(int N);
+}
