@@ -602,5 +602,5 @@ int main()
   streams();
   streams_overlapped();
   mapped();
-  cudaviz::matmul(10000*1024*1024);
+  cudaviz::matmul(4096);
 }

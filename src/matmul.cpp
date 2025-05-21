@@ -41,7 +41,7 @@ namespace cudaviz
         float elapsed_time;
         CUDA_CHECK(cudaEventElapsedTime(&elapsed_time, start, stop));
 
-        std::cout << std::format("Matrix multiplication time: {}\n", elapsed_time);
+        std::cout << std::format("Matrix multiplication time: {} ms\n", elapsed_time);
 
         CUDA_CHECK(cudaEventDestroy(start));
         CUDA_CHECK(cudaEventDestroy(stop));
