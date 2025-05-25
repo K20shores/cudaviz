@@ -68,8 +68,10 @@ namespace cudaviz
         CUDA_CHECK(cudaMalloc((void **)&device_B, N * N * sizeof(float)));
         CUDA_CHECK(cudaMalloc((void **)&device_C, N * N * sizeof(float)));
 
-        CUDA_CHECK(cudaMemset(device_A, 2, N * N * sizeof(float)));
-        CUDA_CHECK(cudaMemset(device_B, 3, N * N * sizeof(float)));
+        std::vector<float> host_A(N * N, 2.0f);
+        std::vector<float> host_B(N * N, 3.0f);
+        CUDA_CHECK(cudaMemcpy(device_A, host_A.data(), N * N * sizeof(float), cudaMemcpyHostToDevice));
+        CUDA_CHECK(cudaMemcpy(device_B, host_B.data(), N * N * sizeof(float), cudaMemcpyHostToDevice));
 
         kernels::tiled_matmul(device_A, device_B, device_C, N);
 
