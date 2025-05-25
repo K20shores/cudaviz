@@ -8,7 +8,7 @@ def matmul(N: int = 1024):
     N (int, optional): The size of the grid (N x N). Defaults to 1024.
 
   Returns:
-    float: the time it took to multiple
+    float: the time it took to multiply
   """
   return _matmul(N)
 
@@ -20,6 +20,6 @@ def tiled_matmul(N: int = 1024):
     N (int, optional): The size of the grid (N x N). Defaults to 1024.
 
   Returns:
-    float: the time it took to multiple
+    float: the time it took to multiply
   """
   return _tiled_matmul(N)
