@@ -101,7 +101,7 @@ void device_data()
         "  Name: {}\n"
         "  Total Global Memory: {} bytes\n"
         "  Shared Memory per Block: {} bytes\n"
-        "  Constant Mmeory: {} bytes\n"
+        "  Constant Memory: {} bytes\n"
         "  Registers per Block: {}\n"
         "  Warp Size: {}\n"
         "  Max Threads per Block: {}\n"
