@@ -13,7 +13,7 @@
 
 namespace cudaviz
 {
-    void matmul(int N)
+    float matmul(int N)
     {
         cudaEvent_t start, stop;
         CUDA_CHECK(cudaEventCreate(&start));
@@ -40,8 +40,6 @@ namespace cudaviz
         float elapsed_time;
         CUDA_CHECK(cudaEventElapsedTime(&elapsed_time, start, stop));
 
-        std::cout << std::format("Matrix multiplication time: {} ms\n", elapsed_time);
-
         CUDA_CHECK(cudaEventDestroy(start));
         CUDA_CHECK(cudaEventDestroy(stop));
 
@@ -49,6 +47,6 @@ namespace cudaviz
         CUDA_CHECK(cudaFree(device_B));
         CUDA_CHECK(cudaFree(device_C));
 
-        return;
+        return elapsed_time;
     }
 }

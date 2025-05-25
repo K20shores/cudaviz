@@ -595,12 +595,12 @@ void mapped() {
 
 int main()
 {
-  device_data();
-  add();
-  histogram();
-  memory_time();
-  streams();
-  streams_overlapped();
-  mapped();
-  cudaviz::matmul(4096);
+  // device_data();
+  // add();
+  // histogram();
+  // memory_time();
+  // streams();
+  // streams_overlapped();
+  // mapped();
+  std::cout << std::format("Matrix multiplication time: {} ms\n", cudaviz::matmul(4));
 }

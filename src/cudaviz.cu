@@ -212,18 +212,19 @@ namespace cudaviz
 
         __global__ void matmul(float *A, float *B, float *C, int N)
         {
-            int i = threadIdx.x + blockDim.x * blockIdx.x;
-            int j = threadIdx.y + blockDim.y * blockIdx.y;
+            int i = threadIdx.y + blockDim.y * blockIdx.y;
+            int j = threadIdx.x + blockDim.x * blockIdx.x;
             if (i < N && j < N)
             {
                 int c_ij = i * N + j;
-                C[c_ij] = 0;
+                float value = 0;
                 for (int k = 0; k < N; ++k)
                 {
                     int a_ik = i * N + k;
                     int b_kj = k * N + j;
-                    C[c_ij] += A[a_ik] * B[b_kj];
+                    value += A[a_ik] * B[b_kj];
                 }
+                C[c_ij] = value;
             }
         }
     }

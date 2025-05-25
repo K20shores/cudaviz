@@ -53,4 +53,8 @@ PYBIND11_MODULE(_cudaviz, m)
       m.def("_ray_trace", &cudaviz::ray_trace,
             py::arg("N") = cudaviz::DEFAULT_RAY_DIM,
             "Create a ray-traced image from randomly generated spheres");
+
+      m.def("_matmul", &cudaviz::matmul,
+            py::arg("N") = cudaviz::DEFAULT_MATRIX_SIZE,
+            "Multiply an NxN matrix together and return the time this takes");
 }
