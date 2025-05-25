@@ -7,4 +7,6 @@ namespace cudaviz
     constexpr int DEFAULT_MATRIX_SIZE = 1024;
     // generate 2 NxN matrices and multiply them
     float matmul(int N = DEFAULT_MATRIX_SIZE);
+    // generate 2 NxN matrices and multiply them with a tiled algorithm
+    float tiled_matmul(int N = DEFAULT_MATRIX_SIZE);
 }

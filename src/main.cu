@@ -101,6 +101,7 @@ void device_data()
         "  Name: {}\n"
         "  Total Global Memory: {} bytes\n"
         "  Shared Memory per Block: {} bytes\n"
+        "  Constant Mmeory: {} bytes\n"
         "  Registers per Block: {}\n"
         "  Warp Size: {}\n"
         "  Max Threads per Block: {}\n"
@@ -114,6 +115,7 @@ void device_data()
         prop.name,
         prop.totalGlobalMem,
         prop.sharedMemPerBlock,
+        prop.totalConstMem,
         prop.regsPerBlock,
         prop.warpSize,
         prop.maxThreadsPerBlock,
@@ -595,12 +597,14 @@ void mapped() {
 
 int main()
 {
-  // device_data();
+  device_data();
   // add();
   // histogram();
   // memory_time();
   // streams();
   // streams_overlapped();
   // mapped();
-  std::cout << std::format("Matrix multiplication time: {} ms\n", cudaviz::matmul(4));
+  int sz = 4096 * 2;
+  std::cout << std::format("Matrix multiplication time: {} ms\n", cudaviz::matmul(sz));
+  std::cout << std::format("Tiled Matrix multiplication time: {} ms\n", cudaviz::tiled_matmul(sz));
 }

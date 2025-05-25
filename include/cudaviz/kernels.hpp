@@ -9,5 +9,6 @@ namespace cudaviz
         void ripple(float *grid, int N, int tick);
         void ray_trace(unsigned char* data, int N);
         void matmul(float* A, float* B, float* C, int N);
+        void tiled_matmul(float* A, float* B, float* C, int N);
     }
 }

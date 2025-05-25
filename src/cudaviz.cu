@@ -13,6 +13,8 @@
 
 namespace cudaviz
 {
+    constexpr int TILE_WIDTH=32;
+
     namespace device
     {
         struct Sphere
@@ -227,6 +229,41 @@ namespace cudaviz
                 C[c_ij] = value;
             }
         }
+
+        __global__ void tiled_matmul(float* A, float* B, float* C, int N) {
+            __shared__ float sh_A[TILE_WIDTH][TILE_WIDTH];
+            __shared__ float sh_B[TILE_WIDTH][TILE_WIDTH];
+
+            int i = TILE_WIDTH*blockIdx.y + threadIdx.y;
+            int j = TILE_WIDTH*blockIdx.x + threadIdx.x;
+
+            float value = 0;
+            for(int phase = 0; phase < (N + TILE_WIDTH - 1)/TILE_WIDTH; ++phase) {
+                int k_col = phase * TILE_WIDTH + threadIdx.x;
+                int k_row = phase * TILE_WIDTH + threadIdx.y;
+                if ((i < N) && (k_col) < N) {
+                    sh_A[threadIdx.y][threadIdx.x] = A[i*N + k_col];
+                }
+                else {
+                    sh_A[threadIdx.y][threadIdx.x] = 0.0f;
+                }
+                if ((j < N) && (k_row) < N) {
+                    sh_B[threadIdx.y][threadIdx.x] = B[j + N * (k_row)];
+                }
+                else {
+                    sh_B[threadIdx.y][threadIdx.x] = 0.0f;
+                }
+                __syncthreads();
+
+                for(int k = 0; k < TILE_WIDTH; ++k) {
+                    value += sh_A[threadIdx.y][k] * sh_B[k][threadIdx.x];
+                }
+                __syncthreads();
+            }
+            if ((i < N) && (j < N)) {
+                C[i*N + j] = value;
+            }
+        }
     }
 
     namespace kernels
@@ -294,6 +331,12 @@ namespace cudaviz
             dim3 threadsPerBlock(16, 16);
             dim3 numBlocks((N + 15) / 16, (N + 15) / 16);
             device::matmul<<<numBlocks, threadsPerBlock>>>(A, B, C, N);
+        }
+
+        void tiled_matmul(float *A, float* B, float* C, int N) {
+            dim3 threadsPerBlock(TILE_WIDTH, TILE_WIDTH);
+            dim3 numBlocks((N + TILE_WIDTH - 1) / TILE_WIDTH, (N + TILE_WIDTH - 1) / TILE_WIDTH);
+            device::tiled_matmul<<<numBlocks, threadsPerBlock>>>(A, B, C, N);
         }
     }
 }
