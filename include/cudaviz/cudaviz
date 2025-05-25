@@ -1,6 +1,7 @@
 #pragma once
 
-#include <cudaviz/Mandelbrot>
 #include <cudaviz/Diffusion>
-#include <cudaviz/Ripple>
+#include <cudaviz/Mandelbrot>
+#include <cudaviz/MatMul>
 #include <cudaviz/RayTrace>
+#include <cudaviz/Ripple>
