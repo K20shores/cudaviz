@@ -2,6 +2,7 @@
 #include <cudaviz/kernels.hpp>
 
 #include "check_error.hpp"
+#include "cuda_buffer.hpp"
 
 #include <vector>
 #include <string>
@@ -21,20 +22,17 @@ namespace cudaviz
 
         CUDA_CHECK(cudaEventRecord(start, 0));
 
-        float *device_A;
-        float *device_B;
-        float *device_C;
-
-        CUDA_CHECK(cudaMalloc((void **)&device_A, N * N * sizeof(float)));
-        CUDA_CHECK(cudaMalloc((void **)&device_B, N * N * sizeof(float)));
-        CUDA_CHECK(cudaMalloc((void **)&device_C, N * N * sizeof(float)));
+        size_t sz = N * N * sizeof(float);
+        CudaBuffer dev_a(sz);
+        CudaBuffer dev_b(sz);
+        CudaBuffer dev_c(sz);
 
         std::vector<float> host_A(N * N, 2.0f);
         std::vector<float> host_B(N * N, 3.0f);
-        CUDA_CHECK(cudaMemcpy(device_A, host_A.data(), N * N * sizeof(float), cudaMemcpyHostToDevice));
-        CUDA_CHECK(cudaMemcpy(device_B, host_B.data(), N * N * sizeof(float), cudaMemcpyHostToDevice));
+        CUDA_CHECK(cudaMemcpy(dev_a.data(), host_A.data(), sz, cudaMemcpyHostToDevice));
+        CUDA_CHECK(cudaMemcpy(dev_b.data(), host_B.data(), sz, cudaMemcpyHostToDevice));
 
-        kernels::matmul(device_A, device_B, device_C, N);
+        kernels::matmul(dev_a.data_float(), dev_b.data_float(), dev_c.data_float(), N);
 
         CUDA_CHECK(cudaEventRecord(stop, 0));
         CUDA_CHECK(cudaEventSynchronize(stop));
@@ -44,10 +42,6 @@ namespace cudaviz
 
         CUDA_CHECK(cudaEventDestroy(start));
         CUDA_CHECK(cudaEventDestroy(stop));
-
-        CUDA_CHECK(cudaFree(device_A));
-        CUDA_CHECK(cudaFree(device_B));
-        CUDA_CHECK(cudaFree(device_C));
 
         return elapsed_time;
     }
@@ -60,20 +54,17 @@ namespace cudaviz
 
         CUDA_CHECK(cudaEventRecord(start, 0));
 
-        float *device_A;
-        float *device_B;
-        float *device_C;
-
-        CUDA_CHECK(cudaMalloc((void **)&device_A, N * N * sizeof(float)));
-        CUDA_CHECK(cudaMalloc((void **)&device_B, N * N * sizeof(float)));
-        CUDA_CHECK(cudaMalloc((void **)&device_C, N * N * sizeof(float)));
+        size_t sz = N * N * sizeof(float);
+        CudaBuffer dev_a(sz);
+        CudaBuffer dev_b(sz);
+        CudaBuffer dev_c(sz);
 
         std::vector<float> host_A(N * N, 2.0f);
         std::vector<float> host_B(N * N, 3.0f);
-        CUDA_CHECK(cudaMemcpy(device_A, host_A.data(), N * N * sizeof(float), cudaMemcpyHostToDevice));
-        CUDA_CHECK(cudaMemcpy(device_B, host_B.data(), N * N * sizeof(float), cudaMemcpyHostToDevice));
+        CUDA_CHECK(cudaMemcpy(dev_a.data(), host_A.data(), sz, cudaMemcpyHostToDevice));
+        CUDA_CHECK(cudaMemcpy(dev_b.data(), host_B.data(), sz, cudaMemcpyHostToDevice));
 
-        kernels::tiled_matmul(device_A, device_B, device_C, N);
+        kernels::tiled_matmul(dev_a.data_float(), dev_b.data_float(), dev_c.data_float(), N);
 
         CUDA_CHECK(cudaEventRecord(stop, 0));
         CUDA_CHECK(cudaEventSynchronize(stop));
@@ -83,10 +74,6 @@ namespace cudaviz
 
         CUDA_CHECK(cudaEventDestroy(start));
         CUDA_CHECK(cudaEventDestroy(stop));
-
-        CUDA_CHECK(cudaFree(device_A));
-        CUDA_CHECK(cudaFree(device_B));
-        CUDA_CHECK(cudaFree(device_C));
 
         return elapsed_time;
     }
