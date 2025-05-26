@@ -1,5 +1,8 @@
 #pragma once
 
+#include <cuda_fp16.h>
+using half_t = __half;
+
 namespace cudaviz
 {
     namespace kernels {
@@ -10,5 +13,6 @@ namespace cudaviz
         void ray_trace(unsigned char* data, int N);
         void matmul(float* A, float* B, float* C, int N);
         void tiled_matmul(float* A, float* B, float* C, int N);
+        void tensor_matmul(half_t* A, half_t* B, float* C, int N);
     }
 }

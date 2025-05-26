@@ -8,12 +8,22 @@
 #include <vector>
 #include <format>
 
+#include <cuda_fp16.h>
+using half_t = __half;
+
+#include <mma.h>
+
 #define INF 2e10f
 #define rnd(x) (x * rand() / RAND_MAX)
 
 namespace cudaviz
 {
-    constexpr int TILE_WIDTH=32;
+    constexpr int TILE_WIDTH = 32;
+
+    // WMMA fragment dimensions
+    constexpr int WMMA_M = 16; // Number rows in tiles of A and C
+    constexpr int WMMA_N = 16; // Number cols in tiles of B and C
+    constexpr int WMMA_K = 16; // Number cols in tiles of A or rows in tiles of B
 
     namespace device
     {
@@ -230,38 +240,80 @@ namespace cudaviz
             }
         }
 
-        __global__ void tiled_matmul(float* A, float* B, float* C, int N) {
+        __global__ void tiled_matmul(float *A, float *B, float *C, int N)
+        {
             __shared__ float sh_A[TILE_WIDTH][TILE_WIDTH];
             __shared__ float sh_B[TILE_WIDTH][TILE_WIDTH];
 
-            int i = TILE_WIDTH*blockIdx.y + threadIdx.y;
-            int j = TILE_WIDTH*blockIdx.x + threadIdx.x;
+            int i = TILE_WIDTH * blockIdx.y + threadIdx.y;
+            int j = TILE_WIDTH * blockIdx.x + threadIdx.x;
 
             float value = 0;
-            for(int phase = 0; phase < (N + TILE_WIDTH - 1)/TILE_WIDTH; ++phase) {
+            for (int phase = 0; phase < (N + TILE_WIDTH - 1) / TILE_WIDTH; ++phase)
+            {
                 int k_col = phase * TILE_WIDTH + threadIdx.x;
                 int k_row = phase * TILE_WIDTH + threadIdx.y;
-                if ((i < N) && (k_col) < N) {
-                    sh_A[threadIdx.y][threadIdx.x] = A[i*N + k_col];
+                if ((i < N) && (k_col) < N)
+                {
+                    sh_A[threadIdx.y][threadIdx.x] = A[i * N + k_col];
                 }
-                else {
+                else
+                {
                     sh_A[threadIdx.y][threadIdx.x] = 0.0f;
                 }
-                if ((j < N) && (k_row) < N) {
+                if ((j < N) && (k_row) < N)
+                {
                     sh_B[threadIdx.y][threadIdx.x] = B[j + N * (k_row)];
                 }
-                else {
+                else
+                {
                     sh_B[threadIdx.y][threadIdx.x] = 0.0f;
                 }
                 __syncthreads();
 
-                for(int k = 0; k < TILE_WIDTH; ++k) {
+                for (int k = 0; k < TILE_WIDTH; ++k)
+                {
                     value += sh_A[threadIdx.y][k] * sh_B[k][threadIdx.x];
                 }
                 __syncthreads();
             }
-            if ((i < N) && (j < N)) {
-                C[i*N + j] = value;
+            if ((i < N) && (j < N))
+            {
+                C[i * N + j] = value;
+            }
+        }
+
+        // based off of https://0mean1sigma.com/tgemm/
+        __global__ void tensor_matmul(half *A, half *B, float *C, int N)
+        {
+            int tile_m = blockIdx.y;
+            int tile_n = blockIdx.x;
+
+            int row = tile_m * WMMA_M;
+            int col = tile_n * WMMA_N;
+
+            nvcuda::wmma::fragment<nvcuda::wmma::matrix_a, WMMA_M, WMMA_N, WMMA_K, half, nvcuda::wmma::row_major> a_frag;
+            nvcuda::wmma::fragment<nvcuda::wmma::matrix_b, WMMA_M, WMMA_N, WMMA_K, half, nvcuda::wmma::row_major> b_frag;
+            nvcuda::wmma::fragment<nvcuda::wmma::accumulator, WMMA_M, WMMA_N, WMMA_K, float> c_frag;
+
+            nvcuda::wmma::fill_fragment(c_frag, 0.0f);
+
+            for (int k = 0; k < N; k += WMMA_K)
+            {
+                int a_off = row * N + k;
+                int b_off = k * N + col;
+                if (row < N && k < N && col < N)
+                {
+                    nvcuda::wmma::load_matrix_sync(a_frag, A + a_off, N);
+                    nvcuda::wmma::load_matrix_sync(b_frag, B + b_off, N);
+                    nvcuda::wmma::mma_sync(c_frag, a_frag, b_frag, c_frag);
+                }
+            }
+
+            // Write output tile
+            if (row < N && col < N)
+            {
+                nvcuda::wmma::store_matrix_sync(C + row * N + col, c_frag, N, nvcuda::wmma::mem_row_major);
             }
         }
     }
@@ -333,10 +385,19 @@ namespace cudaviz
             device::matmul<<<numBlocks, threadsPerBlock>>>(A, B, C, N);
         }
 
-        void tiled_matmul(float *A, float* B, float* C, int N) {
+        void tiled_matmul(float *A, float *B, float *C, int N)
+        {
             dim3 threadsPerBlock(TILE_WIDTH, TILE_WIDTH);
             dim3 numBlocks((N + TILE_WIDTH - 1) / TILE_WIDTH, (N + TILE_WIDTH - 1) / TILE_WIDTH);
             device::tiled_matmul<<<numBlocks, threadsPerBlock>>>(A, B, C, N);
+        }
+
+        void tensor_matmul(half_t *A, half_t *B, float *C, int N)
+        {
+            dim3 threadsPerBlock(32, 1, 1); // one warp per block
+            dim3 numBlocks((N + WMMA_N - 1) / WMMA_N,
+                           (N + WMMA_M - 1) / WMMA_M);
+            device::tensor_matmul<<<gridDim, blockDim, sharedMemBytes>>>(A, B, C, N);
         }
     }
 }

@@ -11,16 +11,18 @@
 #include <iostream>
 
 #include <cuda_runtime.h>
+#include <cuda_fp16.h>
+
+using half_t = __half;
 
 namespace cudaviz
 {
     float matmul(int N)
     {
-        cudaEvent_t start, stop;
-        CUDA_CHECK(cudaEventCreate(&start));
-        CUDA_CHECK(cudaEventCreate(&stop));
+        CudaEventBuffer start;
+        CudaEventBuffer stop;
 
-        CUDA_CHECK(cudaEventRecord(start, 0));
+        CUDA_CHECK(cudaEventRecord(start.get(), 0));
 
         size_t sz = N * N * sizeof(float);
         CudaBuffer dev_a(sz);
@@ -34,25 +36,21 @@ namespace cudaviz
 
         kernels::matmul(dev_a.data_float(), dev_b.data_float(), dev_c.data_float(), N);
 
-        CUDA_CHECK(cudaEventRecord(stop, 0));
-        CUDA_CHECK(cudaEventSynchronize(stop));
+        CUDA_CHECK(cudaEventRecord(stop.get(), 0));
+        CUDA_CHECK(cudaEventSynchronize(stop.get()));
 
         float elapsed_time;
-        CUDA_CHECK(cudaEventElapsedTime(&elapsed_time, start, stop));
-
-        CUDA_CHECK(cudaEventDestroy(start));
-        CUDA_CHECK(cudaEventDestroy(stop));
+        CUDA_CHECK(cudaEventElapsedTime(&elapsed_time, start.get(), stop.get()));
 
         return elapsed_time;
     }
 
     float tiled_matmul(int N)
     {
-        cudaEvent_t start, stop;
-        CUDA_CHECK(cudaEventCreate(&start));
-        CUDA_CHECK(cudaEventCreate(&stop));
+        CudaEventBuffer start;
+        CudaEventBuffer stop;
 
-        CUDA_CHECK(cudaEventRecord(start, 0));
+        CUDA_CHECK(cudaEventRecord(start.get(), 0));
 
         size_t sz = N * N * sizeof(float);
         CudaBuffer dev_a(sz);
@@ -66,14 +64,44 @@ namespace cudaviz
 
         kernels::tiled_matmul(dev_a.data_float(), dev_b.data_float(), dev_c.data_float(), N);
 
-        CUDA_CHECK(cudaEventRecord(stop, 0));
-        CUDA_CHECK(cudaEventSynchronize(stop));
+        CUDA_CHECK(cudaEventRecord(stop.get(), 0));
+        CUDA_CHECK(cudaEventSynchronize(stop.get()));
 
         float elapsed_time;
-        CUDA_CHECK(cudaEventElapsedTime(&elapsed_time, start, stop));
+        CUDA_CHECK(cudaEventElapsedTime(&elapsed_time, start.get(), stop.get()));
 
-        CUDA_CHECK(cudaEventDestroy(start));
-        CUDA_CHECK(cudaEventDestroy(stop));
+        return elapsed_time;
+    }
+
+    float tensor_matmul(int N)
+    {
+        CudaEventBuffer start;
+        CudaEventBuffer stop;
+
+        CUDA_CHECK(cudaEventRecord(start.get(), 0));
+
+        size_t in_sz = N * N * sizeof(half_t);
+        size_t out_sz = N * N * sizeof(float);
+        CudaBuffer dev_a(in_sz);
+        CudaBuffer dev_b(in_sz);
+        CudaBuffer dev_c(out_sz);
+
+        std::vector<half_t> host_A(N * N);
+        std::vector<half_t> host_B(N * N);
+        for (int i = 0; i < N * N; ++i) {
+            host_A[i] = half_t(2.0f);
+            host_B[i] = half_t(3.0f);
+        }
+        CUDA_CHECK(cudaMemcpy(dev_a.data(), host_A.data(), in_sz, cudaMemcpyHostToDevice));
+        CUDA_CHECK(cudaMemcpy(dev_b.data(), host_B.data(), in_sz, cudaMemcpyHostToDevice));
+
+        kernels::tensor_matmul(dev_a.data_half_float(), dev_b.data_half_float(), dev_c.data_float(), N);
+
+        CUDA_CHECK(cudaEventRecord(stop.get(), 0));
+        CUDA_CHECK(cudaEventSynchronize(stop.get()));
+
+        float elapsed_time;
+        CUDA_CHECK(cudaEventElapsedTime(&elapsed_time, start.get(), stop.get()));
 
         return elapsed_time;
     }

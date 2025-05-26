@@ -61,4 +61,8 @@ PYBIND11_MODULE(_cudaviz, m)
       m.def("_tiled_matmul", &cudaviz::tiled_matmul,
             py::arg("N") = cudaviz::DEFAULT_MATRIX_SIZE,
             "Multiply an NxN matrix together and return the time this takes");
+
+      m.def("_tensor_matmul", &cudaviz::tensor_matmul,
+            py::arg("N") = cudaviz::DEFAULT_MATRIX_SIZE,
+            "Multiply an NxN matrix together and return the time this takes");
 }

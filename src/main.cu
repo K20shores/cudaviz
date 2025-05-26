@@ -604,7 +604,8 @@ int main()
   // streams();
   // streams_overlapped();
   // mapped();
-  int sz = 4096;
+  int sz = 4096 * 2;
   std::cout << std::format("Matrix multiplication time: {} ms\n", cudaviz::matmul(sz));
   std::cout << std::format("Tiled Matrix multiplication time: {} ms\n", cudaviz::tiled_matmul(sz));
+  std::cout << std::format("Tensor Matrix multiplication time: {} ms\n", cudaviz::tensor_matmul(sz));
 }
