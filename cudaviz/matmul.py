@@ -1,4 +1,4 @@
-from _cudaviz import _matmul, _tiled_matmul
+from _cudaviz import _matmul, _tiled_matmul, _tensor_matmul
 
 def matmul(N: int = 1024):
   """ 
@@ -23,3 +23,15 @@ def tiled_matmul(N: int = 1024):
     float: the time it took to multiply
   """
   return _tiled_matmul(N)
+
+def tensor_matmul(N: int = 1024):
+  """ 
+  Multiply two NxN matrices together and report the time it takes using cuda tensor cores
+
+  Args:
+    N (int, optional): The size of the grid (N x N). Defaults to 1024.
+
+  Returns:
+    float: the time it took to multiply
+  """
+  return _tensor_matmul(N)

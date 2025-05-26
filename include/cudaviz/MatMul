@@ -9,4 +9,6 @@ namespace cudaviz
     float matmul(int N = DEFAULT_MATRIX_SIZE);
     // generate 2 NxN matrices and multiply them with a tiled algorithm
     float tiled_matmul(int N = DEFAULT_MATRIX_SIZE);
+    // generate 2 NxN matrices and multiply them with cuda tensor cores
+    float tensor_matmul(int N = DEFAULT_MATRIX_SIZE);
 }
