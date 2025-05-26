@@ -286,6 +286,9 @@ namespace cudaviz
         // based off of https://0mean1sigma.com/tgemm/
         __global__ void tensor_matmul(half *A, half *B, float *C, int N)
         {
+            // I don't think this handles the case where N is not a multiple of WMMA_M or WMMA_N
+            // but i'm not sure. Also, I mostly want to measure the performance and those
+            // extra unmultiplied elements won't affect the time too much
             int tile_m = blockIdx.y;
             int tile_n = blockIdx.x;
 
@@ -310,7 +313,6 @@ namespace cudaviz
                 }
             }
 
-            // Write output tile
             if (row < N && col < N)
             {
                 nvcuda::wmma::store_matrix_sync(C + row * N + col, c_frag, N, nvcuda::wmma::mem_row_major);
@@ -397,7 +399,7 @@ namespace cudaviz
             dim3 threadsPerBlock(32, 1, 1); // one warp per block
             dim3 numBlocks((N + WMMA_N - 1) / WMMA_N,
                            (N + WMMA_M - 1) / WMMA_M);
-            device::tensor_matmul<<<gridDim, blockDim, sharedMemBytes>>>(A, B, C, N);
+            device::tensor_matmul<<<numBlocks, threadsPerBlock>>>(A, B, C, N);
         }
     }
 }
